@@ -1,5 +1,5 @@
 ﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
-Partial Class Form1
+Partial Class frmPrincipal
     Inherits System.Windows.Forms.Form
 
     'Form overrides dispose to clean up the component list.
@@ -22,10 +22,100 @@ Partial Class Form1
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        components = New System.ComponentModel.Container()
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(800, 450)
-        Me.Text = "Form1"
+        MenuStrip1 = New MenuStrip()
+        GestionToolStripMenuItem = New ToolStripMenuItem()
+        ProgrammeToolStripMenuItem = New ToolStripMenuItem()
+        ÉtudiantsToolStripMenuItem = New ToolStripMenuItem()
+        QuitterToolStripMenuItem = New ToolStripMenuItem()
+        RapportToolStripMenuItem = New ToolStripMenuItem()
+        ProgrammeToolStripMenuItem1 = New ToolStripMenuItem()
+        ListeDesÉtudiantsToolStripMenuItem = New ToolStripMenuItem()
+        ListeDesÉtudiantsParProgrammeToolStripMenuItem = New ToolStripMenuItem()
+        MenuStrip1.SuspendLayout()
+        SuspendLayout()
+        ' 
+        ' MenuStrip1
+        ' 
+        MenuStrip1.ImageScalingSize = New Size(24, 24)
+        MenuStrip1.Items.AddRange(New ToolStripItem() {GestionToolStripMenuItem, RapportToolStripMenuItem})
+        MenuStrip1.Location = New Point(0, 0)
+        MenuStrip1.Name = "MenuStrip1"
+        MenuStrip1.Size = New Size(800, 33)
+        MenuStrip1.TabIndex = 0
+        MenuStrip1.Text = "MenuStrip1"
+        ' 
+        ' GestionToolStripMenuItem
+        ' 
+        GestionToolStripMenuItem.DropDownItems.AddRange(New ToolStripItem() {ProgrammeToolStripMenuItem, ÉtudiantsToolStripMenuItem, QuitterToolStripMenuItem})
+        GestionToolStripMenuItem.Name = "GestionToolStripMenuItem"
+        GestionToolStripMenuItem.Size = New Size(88, 29)
+        GestionToolStripMenuItem.Text = "Gestion"
+        ' 
+        ' ProgrammeToolStripMenuItem
+        ' 
+        ProgrammeToolStripMenuItem.Name = "ProgrammeToolStripMenuItem"
+        ProgrammeToolStripMenuItem.Size = New Size(270, 34)
+        ProgrammeToolStripMenuItem.Text = "Programme"
+        ' 
+        ' ÉtudiantsToolStripMenuItem
+        ' 
+        ÉtudiantsToolStripMenuItem.Name = "ÉtudiantsToolStripMenuItem"
+        ÉtudiantsToolStripMenuItem.Size = New Size(270, 34)
+        ÉtudiantsToolStripMenuItem.Text = "Étudiants"
+        ' 
+        ' QuitterToolStripMenuItem
+        ' 
+        QuitterToolStripMenuItem.Name = "QuitterToolStripMenuItem"
+        QuitterToolStripMenuItem.Size = New Size(270, 34)
+        QuitterToolStripMenuItem.Text = "Quitter"
+        ' 
+        ' RapportToolStripMenuItem
+        ' 
+        RapportToolStripMenuItem.DropDownItems.AddRange(New ToolStripItem() {ProgrammeToolStripMenuItem1, ListeDesÉtudiantsToolStripMenuItem, ListeDesÉtudiantsParProgrammeToolStripMenuItem})
+        RapportToolStripMenuItem.Name = "RapportToolStripMenuItem"
+        RapportToolStripMenuItem.Size = New Size(93, 29)
+        RapportToolStripMenuItem.Text = "Rapport"
+        ' 
+        ' ProgrammeToolStripMenuItem1
+        ' 
+        ProgrammeToolStripMenuItem1.Name = "ProgrammeToolStripMenuItem1"
+        ProgrammeToolStripMenuItem1.Size = New Size(391, 34)
+        ProgrammeToolStripMenuItem1.Text = "Liste des Programmes"
+        ' 
+        ' ListeDesÉtudiantsToolStripMenuItem
+        ' 
+        ListeDesÉtudiantsToolStripMenuItem.Name = "ListeDesÉtudiantsToolStripMenuItem"
+        ListeDesÉtudiantsToolStripMenuItem.Size = New Size(391, 34)
+        ListeDesÉtudiantsToolStripMenuItem.Text = "Liste des Étudiants"
+        ' 
+        ' ListeDesÉtudiantsParProgrammeToolStripMenuItem
+        ' 
+        ListeDesÉtudiantsParProgrammeToolStripMenuItem.Name = "ListeDesÉtudiantsParProgrammeToolStripMenuItem"
+        ListeDesÉtudiantsParProgrammeToolStripMenuItem.Size = New Size(391, 34)
+        ListeDesÉtudiantsParProgrammeToolStripMenuItem.Text = "Liste des étudiants par programme"
+        ' 
+        ' frmPrincipal
+        ' 
+        AutoScaleDimensions = New SizeF(10F, 25F)
+        AutoScaleMode = AutoScaleMode.Font
+        ClientSize = New Size(800, 450)
+        Controls.Add(MenuStrip1)
+        MainMenuStrip = MenuStrip1
+        Name = "frmPrincipal"
+        Text = "Gestion"
+        MenuStrip1.ResumeLayout(False)
+        MenuStrip1.PerformLayout()
+        ResumeLayout(False)
+        PerformLayout()
     End Sub
 
+    Friend WithEvents MenuStrip1 As MenuStrip
+    Friend WithEvents GestionToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ProgrammeToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ÉtudiantsToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents QuitterToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents RapportToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ProgrammeToolStripMenuItem1 As ToolStripMenuItem
+    Friend WithEvents ListeDesÉtudiantsToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ListeDesÉtudiantsParProgrammeToolStripMenuItem As ToolStripMenuItem
 End Class
