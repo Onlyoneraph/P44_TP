@@ -31,12 +31,7 @@ Partial Class frmProgramme
         lblNbrUnites = New Label()
         lblNom = New Label()
         lblNo = New Label()
-        lvProgramme = New ListView()
-        colNoProgramme = New ColumnHeader()
-        colNom = New ColumnHeader()
-        colNbrUnit = New ColumnHeader()
-        colNbrHrs = New ColumnHeader()
-        ListView1 = New ListView()
+        lvEtudiants = New ListView()
         colDA = New ColumnHeader()
         colNoProg = New ColumnHeader()
         colPrenomEtu = New ColumnHeader()
@@ -46,6 +41,11 @@ Partial Class frmProgramme
         btnAnnuler = New Button()
         btnModifier = New Button()
         btnEnlever = New Button()
+        colNoProgramme = New ColumnHeader()
+        colNom = New ColumnHeader()
+        colNbrUnit = New ColumnHeader()
+        colNbrHrs = New ColumnHeader()
+        lvProgramme = New ListView()
         gbProgramme.SuspendLayout()
         SuspendLayout()
         ' 
@@ -59,6 +59,7 @@ Partial Class frmProgramme
         gbProgramme.Controls.Add(lblNbrUnites)
         gbProgramme.Controls.Add(lblNom)
         gbProgramme.Controls.Add(lblNo)
+        gbProgramme.Enabled = False
         gbProgramme.Location = New Point(12, 12)
         gbProgramme.Name = "gbProgramme"
         gbProgramme.Size = New Size(441, 208)
@@ -92,7 +93,7 @@ Partial Class frmProgramme
         ' mtbNoProgramme
         ' 
         mtbNoProgramme.Location = New Point(154, 40)
-        mtbNoProgramme.Mask = "LLLLLL"
+        mtbNoProgramme.Mask = "&&&&&&"
         mtbNoProgramme.Name = "mtbNoProgramme"
         mtbNoProgramme.Size = New Size(203, 31)
         mtbNoProgramme.TabIndex = 4
@@ -133,50 +134,15 @@ Partial Class frmProgramme
         lblNo.TabIndex = 0
         lblNo.Text = "No :"
         ' 
-        ' lvProgramme
+        ' lvEtudiants
         ' 
-        lvProgramme.Columns.AddRange(New ColumnHeader() {colNoProgramme, colNom, colNbrUnit, colNbrHrs})
-        lvProgramme.FullRowSelect = True
-        lvProgramme.Location = New Point(12, 226)
-        lvProgramme.MultiSelect = False
-        lvProgramme.Name = "lvProgramme"
-        lvProgramme.Size = New Size(634, 378)
-        lvProgramme.TabIndex = 1
-        lvProgramme.UseCompatibleStateImageBehavior = False
-        lvProgramme.View = View.Details
-        ' 
-        ' colNoProgramme
-        ' 
-        colNoProgramme.Text = "No"
-        colNoProgramme.Width = 110
-        ' 
-        ' colNom
-        ' 
-        colNom.Text = "Nom"
-        colNom.TextAlign = HorizontalAlignment.Center
-        colNom.Width = 300
-        ' 
-        ' colNbrUnit
-        ' 
-        colNbrUnit.Text = "Nbr. Unités"
-        colNbrUnit.TextAlign = HorizontalAlignment.Center
-        colNbrUnit.Width = 110
-        ' 
-        ' colNbrHrs
-        ' 
-        colNbrHrs.Text = "Nbr. Heures"
-        colNbrHrs.TextAlign = HorizontalAlignment.Center
-        colNbrHrs.Width = 110
-        ' 
-        ' ListView1
-        ' 
-        ListView1.Columns.AddRange(New ColumnHeader() {colDA, colNoProg, colPrenomEtu, colNomEtu})
-        ListView1.Location = New Point(661, 12)
-        ListView1.Name = "ListView1"
-        ListView1.Size = New Size(782, 592)
-        ListView1.TabIndex = 2
-        ListView1.UseCompatibleStateImageBehavior = False
-        ListView1.View = View.Details
+        lvEtudiants.Columns.AddRange(New ColumnHeader() {colDA, colNoProg, colPrenomEtu, colNomEtu})
+        lvEtudiants.Location = New Point(661, 12)
+        lvEtudiants.Name = "lvEtudiants"
+        lvEtudiants.Size = New Size(782, 592)
+        lvEtudiants.TabIndex = 2
+        lvEtudiants.UseCompatibleStateImageBehavior = False
+        lvEtudiants.View = View.Details
         ' 
         ' colDA
         ' 
@@ -250,6 +216,41 @@ Partial Class frmProgramme
         btnEnlever.Text = "Enlever"
         btnEnlever.UseVisualStyleBackColor = True
         ' 
+        ' colNoProgramme
+        ' 
+        colNoProgramme.Text = "No"
+        colNoProgramme.Width = 110
+        ' 
+        ' colNom
+        ' 
+        colNom.Text = "Nom"
+        colNom.TextAlign = HorizontalAlignment.Center
+        colNom.Width = 300
+        ' 
+        ' colNbrUnit
+        ' 
+        colNbrUnit.Text = "Nbr. Unités"
+        colNbrUnit.TextAlign = HorizontalAlignment.Center
+        colNbrUnit.Width = 110
+        ' 
+        ' colNbrHrs
+        ' 
+        colNbrHrs.Text = "Nbr. Heures"
+        colNbrHrs.TextAlign = HorizontalAlignment.Center
+        colNbrHrs.Width = 110
+        ' 
+        ' lvProgramme
+        ' 
+        lvProgramme.Columns.AddRange(New ColumnHeader() {colNoProgramme, colNom, colNbrUnit, colNbrHrs})
+        lvProgramme.FullRowSelect = True
+        lvProgramme.Location = New Point(12, 226)
+        lvProgramme.MultiSelect = False
+        lvProgramme.Name = "lvProgramme"
+        lvProgramme.Size = New Size(634, 378)
+        lvProgramme.TabIndex = 1
+        lvProgramme.UseCompatibleStateImageBehavior = False
+        lvProgramme.View = View.Details
+        ' 
         ' frmProgramme
         ' 
         AutoScaleDimensions = New SizeF(10F, 25F)
@@ -260,7 +261,7 @@ Partial Class frmProgramme
         Controls.Add(btnAnnuler)
         Controls.Add(btnOK)
         Controls.Add(btnNouveau)
-        Controls.Add(ListView1)
+        Controls.Add(lvEtudiants)
         Controls.Add(lvProgramme)
         Controls.Add(gbProgramme)
         Name = "frmProgramme"
@@ -271,13 +272,8 @@ Partial Class frmProgramme
     End Sub
 
     Friend WithEvents gbProgramme As GroupBox
-    Friend WithEvents lvProgramme As ListView
-    Friend WithEvents colNoProgramme As ColumnHeader
-    Friend WithEvents colNom As ColumnHeader
-    Friend WithEvents colNbrUnit As ColumnHeader
-    Friend WithEvents colNbrHrs As ColumnHeader
     Friend WithEvents lblNo As Label
-    Friend WithEvents ListView1 As ListView
+    Friend WithEvents lvEtudiants As ListView
     Friend WithEvents colDA As ColumnHeader
     Friend WithEvents colNoProg As ColumnHeader
     Friend WithEvents colPrenomEtu As ColumnHeader
@@ -287,11 +283,26 @@ Partial Class frmProgramme
     Friend WithEvents btnAnnuler As Button
     Friend WithEvents btnModifier As Button
     Friend WithEvents btnEnlever As Button
-    Friend WithEvents mtbNbrHeures As MaskedTextBox
-    Friend WithEvents mtbNbrUnites As MaskedTextBox
     Friend WithEvents txtBoxNom As TextBox
     Friend WithEvents mtbNoProgramme As MaskedTextBox
+    Friend WithEvents lblNom As Label
     Friend WithEvents lblNbrHeures As Label
     Friend WithEvents lblNbrUnites As Label
-    Friend WithEvents lblNom As Label
+    Friend WithEvents txtBoxPrenomEtu As TextBox
+    Friend WithEvents mtbNbrHeures As MaskedTextBox
+    Friend WithEvents mtbNbrUnites As MaskedTextBox
+    Friend WithEvents colNoProgramme As ColumnHeader
+    Friend WithEvents colNom As ColumnHeader
+    Friend WithEvents colNbrUnit As ColumnHeader
+    Friend WithEvents colNbrHrs As ColumnHeader
+    Friend WithEvents lvProgramme As ListView
+    Friend WithEvents txtBoxVilleEtu As TextBox
+    Friend WithEvents lblTelEtu As Label
+    Friend WithEvents Label1 As Label
+    Friend WithEvents lblProvinceEtu As Label
+    Friend WithEvents lblVilleEtu As Label
+    Friend WithEvents lblAdresseEtu As Label
+    Friend WithEvents GroupBox1 As GroupBox
+    Friend WithEvents rbMasculinEtu As RadioButton
+    Friend WithEvents cbNoProgEtu As ComboBox
 End Class

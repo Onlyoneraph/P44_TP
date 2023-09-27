@@ -40,3 +40,5 @@ S:\BACKUP D\Projets VS\P44_TP_RAPHAEL_RIVARD\P44_TP_RAPHAEL_RIVARD\bin\Debug\net
 S:\BACKUP D\Projets VS\P44_TP_RAPHAEL_RIVARD\P44_TP_RAPHAEL_RIVARD\bin\Debug\net7.0-windows\runtimes\win\lib\net6.0\System.Runtime.Caching.dll
 S:\BACKUP D\Projets VS\P44_TP_RAPHAEL_RIVARD\P44_TP_RAPHAEL_RIVARD\obj\Debug\net7.0-windows\P44_TP_RAPHAEL_RIVARD.vbproj.AssemblyReference.cache
 S:\BACKUP D\Projets VS\P44_TP_RAPHAEL_RIVARD\P44_TP_RAPHAEL_RIVARD\obj\Debug\net7.0-windows\P44_TP_RAPHAEL_RIVARD.vbproj.CopyComplete
+S:\BACKUP D\Projets VS\P44_TP_RAPHAEL_RIVARD\P44_TP_RAPHAEL_RIVARD\bin\Debug\net7.0-windows\P44_TP_RAPHAEL_RIVARD.dll.config
+S:\BACKUP D\Projets VS\P44_TP_RAPHAEL_RIVARD\P44_TP_RAPHAEL_RIVARD\obj\Debug\net7.0-windows\P44_TP_RAPHAEL_RIVARD.frmEtudiants.resources

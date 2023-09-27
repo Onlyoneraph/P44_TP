@@ -40,7 +40,7 @@ Partial Class frmPrincipal
         MenuStrip1.Items.AddRange(New ToolStripItem() {GestionToolStripMenuItem, RapportToolStripMenuItem})
         MenuStrip1.Location = New Point(0, 0)
         MenuStrip1.Name = "MenuStrip1"
-        MenuStrip1.Size = New Size(800, 33)
+        MenuStrip1.Size = New Size(2278, 33)
         MenuStrip1.TabIndex = 0
         MenuStrip1.Text = "MenuStrip1"
         ' 
@@ -54,19 +54,19 @@ Partial Class frmPrincipal
         ' ProgrammeToolStripMenuItem
         ' 
         ProgrammeToolStripMenuItem.Name = "ProgrammeToolStripMenuItem"
-        ProgrammeToolStripMenuItem.Size = New Size(270, 34)
+        ProgrammeToolStripMenuItem.Size = New Size(208, 34)
         ProgrammeToolStripMenuItem.Text = "Programme"
         ' 
         ' ÉtudiantsToolStripMenuItem
         ' 
         ÉtudiantsToolStripMenuItem.Name = "ÉtudiantsToolStripMenuItem"
-        ÉtudiantsToolStripMenuItem.Size = New Size(270, 34)
+        ÉtudiantsToolStripMenuItem.Size = New Size(208, 34)
         ÉtudiantsToolStripMenuItem.Text = "Étudiants"
         ' 
         ' QuitterToolStripMenuItem
         ' 
         QuitterToolStripMenuItem.Name = "QuitterToolStripMenuItem"
-        QuitterToolStripMenuItem.Size = New Size(270, 34)
+        QuitterToolStripMenuItem.Size = New Size(208, 34)
         QuitterToolStripMenuItem.Text = "Quitter"
         ' 
         ' RapportToolStripMenuItem
@@ -98,8 +98,10 @@ Partial Class frmPrincipal
         ' 
         AutoScaleDimensions = New SizeF(10F, 25F)
         AutoScaleMode = AutoScaleMode.Font
-        ClientSize = New Size(800, 450)
+        AutoSize = True
+        ClientSize = New Size(2278, 1450)
         Controls.Add(MenuStrip1)
+        IsMdiContainer = True
         MainMenuStrip = MenuStrip1
         Name = "frmPrincipal"
         Text = "Gestion"
