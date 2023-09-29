@@ -1,6 +1,9 @@
 ﻿Imports Microsoft.Data.SqlClient
 
 Public Class frmEtudiants
+
+    Dim errorProv As New ErrorProvider()
+
     Private Sub frmEtudiants_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
         BaseDeDonnee.GetBD()
@@ -144,6 +147,8 @@ Public Class frmEtudiants
         txtBoxVilleEtu.Clear()
         mtbCPEtu.Clear()
         mtbTelEtu.Clear()
+        rbMasculinEtu.Checked = False
+        rbFemininEtu.Checked = False
 
     End Sub
 
@@ -202,9 +207,9 @@ Public Class frmEtudiants
 
         Dim sexeEtudiant As Char
 
-        If rbFemininEtu.Checked = True Then
+        If rbFemininEtu.Checked Then
             sexeEtudiant = "F"
-        ElseIf rbMasculinEtu.Checked = True Then
+        ElseIf rbMasculinEtu.Checked Then
             sexeEtudiant = "M"
         End If
 
@@ -271,4 +276,63 @@ Public Class frmEtudiants
 
     End Sub
 
+    Private Sub mtbNoDAEtu_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles mtbNoDAEtu.Validating
+        If mtbNoDAEtu.Text.Length < 7 Then
+            errorProv.SetError(mtbNoDAEtu, "Le numéro de DA de l'étudiant doit contenir 7 caractères")
+            e.Cancel = True
+        End If
+    End Sub
+
+    Private Sub mtbNoDAEtu_Validated(sender As Object, e As EventArgs) Handles mtbNoDAEtu.Validated
+        errorProv.SetError(mtbNoDAEtu, String.Empty)
+    End Sub
+
+    Private Sub txtboxPrenomEtu_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles txtboxPrenomEtu.Validating
+        If txtboxPrenomEtu.Text.Length < 2 Then
+            errorProv.SetError(txtboxPrenomEtu, "Le prénom de l'étudiant doit au moins contenir 2 caractères")
+            e.Cancel = True
+        End If
+    End Sub
+
+    Private Sub txtboxPrenomEtu_Validated(sender As Object, e As EventArgs) Handles txtboxPrenomEtu.Validated
+        errorProv.SetError(txtboxPrenomEtu, String.Empty)
+    End Sub
+
+    Private Sub txtBoxNomEtu_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles txtBoxNomEtu.Validating
+        If txtBoxNomEtu.Text.Length < 2 Then
+            errorProv.SetError(txtBoxNomEtu, "Le nom de l'étudiant doit au moins contenir 2 caractères")
+            e.Cancel = True
+        End If
+    End Sub
+
+    Private Sub txtBoxNomEtu_Validated(sender As Object, e As EventArgs) Handles txtBoxNomEtu.Validated
+        errorProv.SetError(txtBoxNomEtu, String.Empty)
+    End Sub
+
+    Private Sub cbNoProgrammeEtu_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles cbNoProgrammeEtu.Validating
+        If cbNoProgrammeEtu.Text.Length < 6 Then
+            errorProv.SetError(cbNoProgrammeEtu, "Le numéro de programme doit contenir 6 caractères")
+            e.Cancel = True
+        End If
+    End Sub
+
+    Private Sub cbNoProgrammeEtu_Validated(sender As Object, e As EventArgs) Handles cbNoProgrammeEtu.Validated
+        errorProv.SetError(cbNoProgrammeEtu, String.Empty)
+    End Sub
+
+    Private Sub btnAnnuler_Click(sender As Object, e As EventArgs) Handles btnAnnuler.Click
+
+        DebarrerControles(btnModifier, btnEnlever, btnNouveau, lvEtudiantsEtu)
+        BarrerControles(btnOK, btnAnnuler, gbEtudiant)
+
+        ViderFormulaire()
+
+        If lvEtudiantsEtu.Items.Count > 0 Then
+
+            lvEtudiantsEtu.SelectedIndices.Add(0)
+            lvEtudiantsEtu.Focus()
+
+        End If
+
+    End Sub
 End Class

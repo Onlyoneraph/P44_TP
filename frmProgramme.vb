@@ -3,6 +3,8 @@ Imports Microsoft.Data.SqlClient
 
 Public Class frmProgramme
 
+    Dim errorProv As New ErrorProvider()
+
     Private Sub frmProgramme_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
 
@@ -164,11 +166,19 @@ Public Class frmProgramme
 
     Private Sub InsererNouveauProgramme()
 
+        Dim nbrHeures As Integer
+
+        If mtbNbrHeures.Text.Length = 0 Then
+            nbrHeures = 0
+        Else
+            nbrHeures = Convert.ToInt32(mtbNbrHeures.Text)
+        End If
+
         BaseDeDonnee.GetBD().Query("INSERT INTO dbo.T_Programme (pro_no, pro_nom, pro_nbr_unites, pro_nbr_heures) Values(@pro_no, @pro_nom, @pro_nbr_unites, @pro_nbr_heures)", New Object() {
             mtbNoProgramme.Text,
             txtBoxNom.Text,
             Convert.ToDecimal(mtbNbrUnites.Text),
-            Convert.ToInt32(mtbNbrHeures.Text)
+            nbrHeures
         })
 
         ViderFormulaire()
@@ -246,8 +256,17 @@ Public Class frmProgramme
 
     Private Sub btnAnnuler_Click(sender As Object, e As EventArgs) Handles btnAnnuler.Click
 
-        DebarrerControles(btnModifier, btnEnlever, btnNouveau)
-        BarrerControles(btnOK, btnAnnuler, lvProgramme)
+        DebarrerControles(btnModifier, btnEnlever, btnNouveau, lvProgramme)
+        BarrerControles(btnOK, btnAnnuler, gbProgramme)
+
+        ViderFormulaire()
+
+        If lvProgramme.Items.Count > 0 Then
+
+            lvProgramme.SelectedIndices.Add(0)
+            lvProgramme.Focus()
+
+        End If
 
     End Sub
 
@@ -273,5 +292,38 @@ Public Class frmProgramme
         MsgBox("Le cours No : " & noProgramme & vbCrLf & "Du nom de : " & nomProg & vbCrLf & "A été supprimé avec succès", Title:="Succès")
         ExtraireDonneesVersListView()
 
+    End Sub
+
+    Private Sub mtbNoProgramme_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles mtbNoProgramme.Validating
+        If mtbNoProgramme.Text.Length < 6 Then
+            errorProv.SetError(mtbNoProgramme, "Le No de programme doit contenir 6 caractères")
+            e.Cancel = True
+        End If
+    End Sub
+
+    Private Sub mtbNoProgramme_Validated(sender As Object, e As EventArgs) Handles mtbNoProgramme.Validated
+        errorProv.SetError(mtbNoProgramme, String.Empty)
+    End Sub
+
+    Private Sub txtBoxNom_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles txtBoxNom.Validating
+        If txtBoxNom.Text.Length < 3 Then
+            errorProv.SetError(txtBoxNom, "Le nom du programme doit contenir au moins 3 caractères")
+            e.Cancel = True
+        End If
+    End Sub
+
+    Private Sub txtBoxNom_Validated(sender As Object, e As EventArgs) Handles txtBoxNom.Validated
+        errorProv.SetError(txtBoxNom, String.Empty)
+    End Sub
+
+    Private Sub mtbNbrUnites_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles mtbNbrUnites.Validating
+        If mtbNbrUnites.Text.Length < 4 Then
+            errorProv.SetError(mtbNbrUnites, "Le nombre d'unités du cours doit contenir au moins 4 caractères")
+            e.Cancel = True
+        End If
+    End Sub
+
+    Private Sub mtbNbrUnites_Validated(sender As Object, e As EventArgs) Handles mtbNbrUnites.Validated
+        errorProv.SetError(mtbNbrUnites, String.Empty)
     End Sub
 End Class
