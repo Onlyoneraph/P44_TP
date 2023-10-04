@@ -245,7 +245,7 @@ Partial Class frmEtudiants
         ' mtbTelEtu
         ' 
         mtbTelEtu.Location = New Point(605, 202)
-        mtbTelEtu.Mask = "(000) 000-0000"
+        mtbTelEtu.Mask = "(999) 999-9999"
         mtbTelEtu.Name = "mtbTelEtu"
         mtbTelEtu.Size = New Size(203, 31)
         mtbTelEtu.TabIndex = 19
@@ -253,7 +253,7 @@ Partial Class frmEtudiants
         ' mtbCPEtu
         ' 
         mtbCPEtu.Location = New Point(605, 162)
-        mtbCPEtu.Mask = "&&&-&&&"
+        mtbCPEtu.Mask = "L9L-9L9"
         mtbCPEtu.Name = "mtbCPEtu"
         mtbCPEtu.Size = New Size(203, 31)
         mtbCPEtu.TabIndex = 18
@@ -406,7 +406,7 @@ Partial Class frmEtudiants
         Controls.Add(lvEtudiantsEtu)
         Controls.Add(gbEtudiant)
         Name = "frmEtudiants"
-        Text = "frmEtudiants"
+        Text = "Gestion des étudiants"
         gbEtudiant.ResumeLayout(False)
         gbEtudiant.PerformLayout()
         gbSexeEtu.ResumeLayout(False)

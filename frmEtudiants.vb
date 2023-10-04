@@ -4,6 +4,7 @@ Public Class frmEtudiants
 
     Dim errorProv As New ErrorProvider()
 
+    ' Chargement du Formulaire - Initialisation
     Private Sub frmEtudiants_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
         BaseDeDonnee.GetBD()
@@ -21,18 +22,185 @@ Public Class frmEtudiants
 
     End Sub
 
-    Private Sub InitialiserNoProg()
+#Region "Début Bloc fonctions | Event et modification Formulaire"
 
-        Using dr = BaseDeDonnee.GetBD().Query("SELECT * FROM dbo.T_programme").GetReader()
+    Private Sub lvEtudiantsEtu_SelectedIndexChanged(sender As Object, e As EventArgs) Handles lvEtudiantsEtu.SelectedIndexChanged
 
-            Do While dr.Read()
-                cbNoProgrammeEtu.Items.Add(dr("pro_no"))
-            Loop
+        If lvEtudiantsEtu.SelectedItems.Count > 0 Then
 
-        End Using
+            Dim idEtudiant As Integer
+
+            idEtudiant = lvEtudiantsEtu.SelectedItems.Item(0).SubItems.Item(0).Text
+
+            ChargerEtudiantFormulaire(idEtudiant)
+            DebarrerControles(btnEnlever, btnModifier)
+
+        Else
+            BarrerControles(btnEnlever, btnModifier)
+        End If
 
     End Sub
 
+    Private Sub ViderFormulaire()
+
+        mtbNoDAEtu.Clear()
+        txtboxPrenomEtu.Clear()
+        txtBoxNomEtu.Clear()
+        txtBoxAdresseEtu.Clear()
+        txtBoxVilleEtu.Clear()
+        mtbCPEtu.Clear()
+        mtbTelEtu.Clear()
+        rbMasculinEtu.Checked = False
+        rbFemininEtu.Checked = False
+
+    End Sub
+
+    Private Sub BarrerControles(ParamArray ctrls() As Control)
+
+        For Each control In ctrls
+            control.Enabled = False
+        Next
+
+    End Sub
+
+    Private Sub DebarrerControles(ParamArray ctrls() As Control)
+
+        For Each control In ctrls
+            control.Enabled = True
+        Next
+
+    End Sub
+
+#End Region
+
+#Region "Début Bloc fonctions | Action vers la DB - CRUD"
+
+    'Create
+    Private Sub InsererNouvelEtudiant()
+
+        Dim sexeEtudiant As Char
+
+        Dim cpCount As Integer = mtbCPEtu.Text.Length
+        Dim telCount As Integer = mtbTelEtu.Text.Length
+        Dim province As String
+
+        If cbProvinceEtu.SelectedItem = Nothing Then
+            province = "Québec"
+        Else
+            province = cbProvinceEtu.SelectedItem.ToString()
+        End If
+
+
+        If rbFemininEtu.Checked Then
+            sexeEtudiant = "F"
+        ElseIf rbMasculinEtu.Checked Then
+            sexeEtudiant = "M"
+        Else
+            sexeEtudiant = "X"
+        End If
+
+
+
+        If cpCount < 7 AndAlso telCount < 14 AndAlso sexeEtudiant = "X" Then
+
+            BaseDeDonnee.GetBD().Query("INSERT INTO dbo.T_etudiants (etu_da, pro_no, etu_nom, etu_prenom, etu_adresse, etu_ville, etu_province) Values(@etu_da, @pro_no, @etu_nom, @etu_prenom, @etu_adresse, @etu_ville, @etu_province)", New Object() {
+            mtbNoDAEtu.Text,
+            cbNoProgrammeEtu.Text,
+            txtBoxNomEtu.Text,
+            txtboxPrenomEtu.Text,
+            txtBoxAdresseEtu.Text,
+            txtBoxVilleEtu.Text,
+            province
+           })
+
+        ElseIf cpCount < 7 AndAlso sexeEtudiant = "X" Then
+
+            BaseDeDonnee.GetBD().Query("INSERT INTO dbo.T_etudiants (etu_da, pro_no, etu_nom, etu_prenom, etu_adresse, etu_ville, etu_province, etu_telephone) Values(@etu_da, @pro_no, @etu_nom, @etu_prenom, @etu_adresse, @etu_ville, @etu_province, @etu_telephone)", New Object() {
+            mtbNoDAEtu.Text,
+            cbNoProgrammeEtu.Text,
+            txtBoxNomEtu.Text,
+            txtboxPrenomEtu.Text,
+            txtBoxAdresseEtu.Text,
+            txtBoxVilleEtu.Text,
+            province,
+            mtbTelEtu.Text
+           })
+
+        ElseIf telCount < 14 AndAlso sexeEtudiant = "X" Then
+
+            BaseDeDonnee.GetBD().Query("INSERT INTO dbo.T_etudiants (etu_da, pro_no, etu_nom, etu_prenom, etu_adresse, etu_ville, etu_province, etu_codepostal) Values(@etu_da, @pro_no, @etu_nom, @etu_prenom, @etu_adresse, @etu_ville, @etu_province, @etu_codepostal)", New Object() {
+            mtbNoDAEtu.Text,
+            cbNoProgrammeEtu.Text,
+            txtBoxNomEtu.Text,
+            txtboxPrenomEtu.Text,
+            txtBoxAdresseEtu.Text,
+            txtBoxVilleEtu.Text,
+            province,
+            mtbCPEtu.Text.ToUpper()
+           })
+
+        ElseIf telCount < 14 Then
+
+            BaseDeDonnee.GetBD().Query("INSERT INTO dbo.T_etudiants (etu_da, pro_no, etu_nom, etu_prenom, etu_sexe, etu_adresse, etu_ville, etu_province, etu_codepostal) Values(@etu_da, @pro_no, @etu_nom, @etu_prenom, @etu_sexe, @etu_adresse, @etu_ville, @etu_province, @etu_codepostal)", New Object() {
+            mtbNoDAEtu.Text,
+            cbNoProgrammeEtu.Text,
+            txtBoxNomEtu.Text,
+            txtboxPrenomEtu.Text,
+            sexeEtudiant,
+            txtBoxAdresseEtu.Text,
+            txtBoxVilleEtu.Text,
+            province,
+            mtbCPEtu.Text.ToUpper()
+           })
+
+        ElseIf cpCount < 7 Then
+
+            BaseDeDonnee.GetBD().Query("INSERT INTO dbo.T_etudiants (etu_da, pro_no, etu_nom, etu_prenom, etu_sexe, etu_adresse, etu_ville, etu_province, etu_telephone) Values(@etu_da, @pro_no, @etu_nom, @etu_prenom, @etu_sexe, @etu_adresse, @etu_ville, @etu_province, @etu_telephone)", New Object() {
+            mtbNoDAEtu.Text,
+            cbNoProgrammeEtu.Text,
+            txtBoxNomEtu.Text,
+            txtboxPrenomEtu.Text,
+            sexeEtudiant,
+            txtBoxAdresseEtu.Text,
+            txtBoxVilleEtu.Text,
+            province,
+            mtbTelEtu.Text
+           })
+
+        ElseIf sexeEtudiant = "X" Then
+
+            BaseDeDonnee.GetBD().Query("INSERT INTO dbo.T_etudiants (etu_da, pro_no, etu_nom, etu_prenom, etu_adresse, etu_ville, etu_province, etu_telephone, etu_codepostal) Values(@etu_da, @pro_no, @etu_nom, @etu_prenom, @etu_adresse, @etu_ville, @etu_province, @etu_telephone, @etu_codepostal)", New Object() {
+            mtbNoDAEtu.Text,
+            cbNoProgrammeEtu.Text,
+            txtBoxNomEtu.Text,
+            txtboxPrenomEtu.Text,
+            txtBoxAdresseEtu.Text,
+            txtBoxVilleEtu.Text,
+            province,
+            mtbTelEtu.Text,
+            mtbCPEtu.Text.ToUpper()
+           })
+        Else
+
+            BaseDeDonnee.GetBD().Query("INSERT INTO dbo.T_etudiants (etu_da, pro_no, etu_nom, etu_prenom, etu_sexe, etu_adresse, etu_ville, etu_province, etu_telephone, etu_codepostal) Values(@etu_da, @pro_no, @etu_nom, @etu_prenom, @etu_sexe, @etu_adresse, @etu_ville, @etu_province, @etu_telephone, @etu_codepostal)", New Object() {
+            mtbNoDAEtu.Text,
+            cbNoProgrammeEtu.Text,
+            txtBoxNomEtu.Text,
+            txtboxPrenomEtu.Text,
+            sexeEtudiant,
+            txtBoxAdresseEtu.Text,
+            txtBoxVilleEtu.Text,
+            province,
+            mtbTelEtu.Text,
+            mtbCPEtu.Text.ToUpper()
+           })
+
+
+        End If
+
+    End Sub
+
+    'Read
     Private Sub ExtraireDonneesVersListViewEtu()
 
         lvEtudiantsEtu.Items.Clear()
@@ -73,23 +241,6 @@ Public Class frmEtudiants
 
     End Sub
 
-    Private Sub lvEtudiantsEtu_SelectedIndexChanged(sender As Object, e As EventArgs) Handles lvEtudiantsEtu.SelectedIndexChanged
-
-        If lvEtudiantsEtu.SelectedItems.Count > 0 Then
-
-            Dim idEtudiant As Integer
-
-            idEtudiant = lvEtudiantsEtu.SelectedItems.Item(0).SubItems.Item(0).Text
-
-            ChargerEtudiantFormulaire(idEtudiant)
-            DebarrerControles(btnEnlever, btnModifier)
-
-        Else
-            BarrerControles(btnEnlever, btnModifier)
-        End If
-
-    End Sub
-
     Private Sub ChargerEtudiantFormulaire(idEtudiant As Integer)
 
         Try
@@ -108,10 +259,17 @@ Public Class frmEtudiants
                     mtbCPEtu.Text = dr("etu_codepostal").ToString()
                     mtbTelEtu.Text = dr("etu_telephone").ToString()
 
-                    If dr("etu_sexe") = "M" Then
+
+                    'Tentative de convertir char du sexe de l'étudiant en string, sinon nothing
+                    Dim sexe As Char = TryCast(dr("etu_sexe"), String)
+
+                    If sexe = "M" Then
                         rbMasculinEtu.Checked = True
-                    ElseIf dr("etu_sexe") = "F" Then
+                    ElseIf sexe = "F" Then
                         rbFemininEtu.Checked = True
+                    Else
+                        rbMasculinEtu.Checked = False
+                        rbFemininEtu.Checked = False
                     End If
 
                 End If
@@ -128,43 +286,64 @@ Public Class frmEtudiants
 
     End Sub
 
+    Private Sub InitialiserNoProg()
+
+        Using dr = BaseDeDonnee.GetBD().Query("SELECT * FROM dbo.T_programme").GetReader()
+
+            Do While dr.Read()
+                cbNoProgrammeEtu.Items.Add(dr("pro_no"))
+            Loop
+
+        End Using
+
+    End Sub
+
+    'Update
+    Private Sub UpdateEtudiant()
+
+        Dim sexeEtudiant As Char
+
+        If rbFemininEtu.Checked Then
+            sexeEtudiant = "F"
+        ElseIf rbMasculinEtu.Checked Then
+            sexeEtudiant = "M"
+        End If
+
+        BaseDeDonnee.GetBD().Query(
+            "UPDATE dbo.T_etudiants SET pro_no=@pro_no, etu_nom=@etu_nom, 
+            etu_prenom=@etu_prenom, etu_sexe=@etu_sexe, etu_adresse=@etu_adresse, 
+            etu_ville=@etu_ville, etu_province=@etu_province, etu_codepostal=@etu_codepostal, etu_telephone=@etu_telephone WHERE etu_da=@etu_da", New Object() {
+            cbNoProgrammeEtu.Text,
+            txtBoxNomEtu.Text,
+            txtboxPrenomEtu.Text,
+            sexeEtudiant,
+            txtBoxAdresseEtu.Text,
+            txtBoxVilleEtu.Text,
+            cbProvinceEtu.SelectedItem.ToString(),
+            mtbCPEtu.Text,
+            mtbTelEtu.Text,
+            mtbNoDAEtu.Text
+                                                                                                                                                  })
+
+    End Sub
+
+    'Delete
+    Private Sub supprimerEtudiant(daEtu As String, prenomEtu As String, nomEtu As String)
+        BaseDeDonnee.GetBD().Query("DELETE FROM dbo.T_etudiants WHERE etu_da=@etu_da", New Object() {daEtu})
+        ExtraireDonneesVersListViewEtu()
+    End Sub
+
+#End Region
+
+#Region "Début Bloc fonctions | Action des Boutons Click"
+
     Private Sub btnNouveau_Click(sender As Object, e As EventArgs) Handles btnNouveau.Click
 
         DebarrerControles(btnOK, btnAnnuler, gbEtudiant, gbSexeEtu, mtbNoDAEtu)
-        BarrerControles(btnNouveau, btnModifier)
+        BarrerControles(btnNouveau, btnModifier, btnEnlever, lvEtudiantsEtu)
         ViderFormulaire()
 
         btnOK.Tag = "Nouveau"
-
-    End Sub
-
-    Private Sub ViderFormulaire()
-
-        mtbNoDAEtu.Clear()
-        txtboxPrenomEtu.Clear()
-        txtBoxNomEtu.Clear()
-        txtBoxAdresseEtu.Clear()
-        txtBoxVilleEtu.Clear()
-        mtbCPEtu.Clear()
-        mtbTelEtu.Clear()
-        rbMasculinEtu.Checked = False
-        rbFemininEtu.Checked = False
-
-    End Sub
-
-    Private Sub BarrerControles(ParamArray ctrls() As Control)
-
-        For Each control In ctrls
-            control.Enabled = False
-        Next
-
-    End Sub
-
-    Private Sub DebarrerControles(ParamArray ctrls() As Control)
-
-        For Each control In ctrls
-            control.Enabled = True
-        Next
 
     End Sub
 
@@ -195,69 +374,11 @@ Public Class frmEtudiants
         End If
 
 
-        DebarrerControles(btnNouveau)
+        DebarrerControles(btnNouveau, btnEnlever, btnModifier, lvEtudiantsEtu)
         BarrerControles(btnOK, btnAnnuler, gbEtudiant, mtbNoDAEtu)
         ExtraireDonneesVersListViewEtu()
 
         btnOK.Tag = ""
-
-    End Sub
-
-    Private Sub UpdateEtudiant()
-
-        Dim sexeEtudiant As Char
-
-        If rbFemininEtu.Checked Then
-            sexeEtudiant = "F"
-        ElseIf rbMasculinEtu.Checked Then
-            sexeEtudiant = "M"
-        End If
-
-        BaseDeDonnee.GetBD().Query(
-            "UPDATE dbo.T_etudiants SET pro_no=@pro_no, etu_nom=@etu_nom, 
-            etu_prenom=@etu_prenom, etu_sexe=@etu_sexe, etu_adresse=@etu_adresse, 
-            etu_ville=@etu_ville, etu_province=@etu_province, etu_codepostal=@etu_codepostal, etu_telephone=@etu_telephone WHERE etu_da=@etu_da", New Object() {
-            cbNoProgrammeEtu.Text,
-            txtBoxNomEtu.Text,
-            txtboxPrenomEtu.Text,
-            sexeEtudiant,
-            txtBoxAdresseEtu.Text,
-            txtBoxVilleEtu.Text,
-            cbProvinceEtu.SelectedItem.ToString(),
-            mtbCPEtu.Text,
-            mtbTelEtu.Text,
-            mtbNoDAEtu.Text
-                                                                                                                                                  })
-
-        ViderFormulaire()
-        BarrerControles(btnEnlever, btnModifier)
-
-    End Sub
-
-    Private Sub InsererNouvelEtudiant()
-
-        Dim sexeEtudiant As Char
-
-        If rbFemininEtu.Checked Then
-            sexeEtudiant = "F"
-        ElseIf rbMasculinEtu.Checked Then
-            sexeEtudiant = "M"
-        End If
-
-        BaseDeDonnee.GetBD().Query("INSERT INTO dbo.T_etudiants (etu_da, pro_no, etu_nom, etu_prenom, etu_sexe, etu_adresse, etu_ville, etu_province, etu_telephone, etu_codepostal) Values(@etu_da, @pro_no, @etu_nom, @etu_prenom, @etu_sexe, @etu_adresse, @etu_ville, @etu_province, @etu_telephone, @etu_codepostal)", New Object() {
-            mtbNoDAEtu.Text,
-            cbNoProgrammeEtu.Text,
-            txtBoxNomEtu.Text,
-            txtboxPrenomEtu.Text,
-            sexeEtudiant,
-            txtBoxAdresseEtu.Text,
-            txtBoxVilleEtu.Text,
-            cbProvinceEtu.SelectedItem.ToString(),
-            mtbTelEtu.Text,
-            mtbCPEtu.Text
-           })
-
-        ViderFormulaire()
 
     End Sub
 
@@ -270,11 +391,37 @@ Public Class frmEtudiants
 
     End Sub
 
-    Private Sub frmEtudiants_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
+    Private Sub btnAnnuler_Click(sender As Object, e As EventArgs) Handles btnAnnuler.Click
 
-        BaseDeDonnee.GetBD().Dispose()
+        DebarrerControles(btnModifier, btnEnlever, btnNouveau, lvEtudiantsEtu)
+        BarrerControles(btnOK, btnAnnuler, gbEtudiant)
+
+        ViderFormulaire()
+
+        If lvEtudiantsEtu.Items.Count > 0 Then
+
+            lvEtudiantsEtu.SelectedIndices.Add(0)
+            lvEtudiantsEtu.Focus()
+
+        End If
 
     End Sub
+
+    Private Sub btnEnlever_Click(sender As Object, e As EventArgs) Handles btnEnlever.Click
+
+        Dim suppression As DialogResult = MessageBox.Show("Voulez-vous vraiment supprimer l'étudiant : " & txtboxPrenomEtu.Text & " " & txtBoxNomEtu.Text & vbCrLf & "DA : " & mtbNoDAEtu.Text, "Suppression", MessageBoxButtons.YesNo)
+
+        If suppression = DialogResult.Yes Then
+
+            supprimerEtudiant(mtbNoDAEtu.Text, txtboxPrenomEtu.Text, txtBoxNomEtu.Text)
+
+        End If
+
+    End Sub
+
+#End Region
+
+#Region "Début Bloc fonctions | Validated - Validating"
 
     Private Sub mtbNoDAEtu_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles mtbNoDAEtu.Validating
         If mtbNoDAEtu.Text.Length < 7 Then
@@ -320,19 +467,14 @@ Public Class frmEtudiants
         errorProv.SetError(cbNoProgrammeEtu, String.Empty)
     End Sub
 
-    Private Sub btnAnnuler_Click(sender As Object, e As EventArgs) Handles btnAnnuler.Click
+#End Region
 
-        DebarrerControles(btnModifier, btnEnlever, btnNouveau, lvEtudiantsEtu)
-        BarrerControles(btnOK, btnAnnuler, gbEtudiant)
 
-        ViderFormulaire()
 
-        If lvEtudiantsEtu.Items.Count > 0 Then
 
-            lvEtudiantsEtu.SelectedIndices.Add(0)
-            lvEtudiantsEtu.Focus()
 
-        End If
 
-    End Sub
+
+
+
 End Class

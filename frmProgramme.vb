@@ -1,12 +1,11 @@
-﻿Imports Microsoft.Data
-Imports Microsoft.Data.SqlClient
+﻿Imports Microsoft.Data.SqlClient
 
 Public Class frmProgramme
 
     Dim errorProv As New ErrorProvider()
 
+    ' Chargement du Formulaire - Initialisation
     Private Sub frmProgramme_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-
 
         BaseDeDonnee.GetBD()
 
@@ -14,11 +13,154 @@ Public Class frmProgramme
 
     End Sub
 
+
+#Region "Début Bloc fonctions | Event et modification Formulaire"
+
+    Private Sub lvProgramme_SelectedIndexChanged(sender As Object, e As EventArgs) Handles lvProgramme.SelectedIndexChanged
+
+        If lvProgramme.SelectedItems.Count > 0 Then
+
+            Dim idCours As String
+
+            idCours = lvProgramme.SelectedItems.Item(0).SubItems.Item(0).Text.ToString()
+
+            DebarrerControles(btnModifier, btnEnlever)
+            ChargerProgrammeFormulaire(idCours)
+            ChargerEtudiantsListView(idCours)
+        Else
+            BarrerControles(btnModifier, btnEnlever)
+        End If
+
+    End Sub
+
+    Private Sub ViderFormulaire()
+        mtbNoProgramme.Clear()
+        txtBoxNom.Clear()
+        mtbNbrUnites.Clear()
+        mtbNbrHeures.Clear()
+    End Sub
+
+    Private Sub BarrerControles(ParamArray ctrls() As Control)
+
+        For Each control In ctrls
+            control.Enabled = False
+        Next
+
+    End Sub
+
+    Private Sub DebarrerControles(ParamArray ctrls() As Control)
+
+        For Each control In ctrls
+            control.Enabled = True
+        Next
+
+    End Sub
+
+#End Region
+
+#Region "Début Bloc fonctions | Action vers la DB - CRUD"
+
+    'Create
+    Private Sub InsererNouveauProgramme()
+
+        Dim nbrHeures As Integer
+
+        If mtbNbrHeures.Text.Length = 0 Then
+
+            BaseDeDonnee.GetBD().Query("INSERT INTO dbo.T_Programme (pro_no, pro_nom, pro_nbr_unites) Values(@pro_no, @pro_nom, @pro_nbr_unites)", New Object() {
+                        mtbNoProgramme.Text,
+                        txtBoxNom.Text,
+                        Convert.ToDecimal(mtbNbrUnites.Text)
+                    })
+
+        Else
+            nbrHeures = Convert.ToInt32(mtbNbrHeures.Text)
+
+            BaseDeDonnee.GetBD().Query("INSERT INTO dbo.T_Programme (pro_no, pro_nom, pro_nbr_unites, pro_nbr_heures) Values(@pro_no, @pro_nom, @pro_nbr_unites, @pro_nbr_heures)", New Object() {
+                        mtbNoProgramme.Text,
+                        txtBoxNom.Text,
+                        Convert.ToDecimal(mtbNbrUnites.Text),
+                        nbrHeures
+                    })
+        End If
+
+
+
+        ViderFormulaire()
+
+    End Sub
+
+    'Read
+    Private Sub ChargerProgrammeFormulaire(idCours As String)
+
+
+        Try
+
+            Using dr = BaseDeDonnee.GetBD().Query("SELECT * FROM dbo.T_programme WHERE pro_no=@pro_no", New Object() {idCours}).GetReader()
+
+                If dr.Read() Then
+
+                    mtbNoProgramme.Text = dr("pro_no").ToString()
+                    txtBoxNom.Text = dr("pro_nom").ToString()
+                    mtbNbrUnites.Text = dr("pro_nbr_unites").ToString()
+                    mtbNbrHeures.Text = dr("pro_nbr_heures").ToString()
+
+                End If
+
+            End Using
+
+
+        Catch Sqlex As SqlException
+            MsgBox("Une erreur est survenue avec SQL pour extraire les données dans le Formulaire : " & Sqlex.Message & " Numéro d'erreur : " & Sqlex.Number)
+
+        Catch ex As Exception
+            MsgBox("Une erreur est survenue pour extraire les données dans le Formulaire : " & ex.Message)
+
+
+        End Try
+
+
+
+    End Sub
+    Private Sub ChargerEtudiantsListView(idCours As String)
+
+        lvEtudiants.Items.Clear()
+
+        Dim lvi As ListViewItem
+
+        Try
+
+            Using dr = BaseDeDonnee.GetBD().Query("SELECT * FROM dbo.T_etudiants WHERE pro_no=@pro_no", New Object() {idCours}).GetReader()
+
+                Do While dr.Read()
+
+                    lvi = New ListViewItem(dr("etu_da").ToString())
+                    lvi.SubItems.Add(dr("pro_no").ToString())
+                    lvi.SubItems.Add(dr("etu_prenom").ToString())
+                    lvi.SubItems.Add(dr("etu_nom").ToString())
+
+                    lvEtudiants.Items.Add(lvi)
+
+                Loop
+
+            End Using
+
+
+        Catch sqlEx As SqlException
+            MsgBox("Une erreur est survenue lors de la connexion en lien avec SQL : " & sqlEx.Message & " Erreur No : " & sqlEx.Number)
+
+        Catch ex As Exception
+            MsgBox("Une erreur autre est survenue lors de la connexion : " & ex.Message)
+
+        End Try
+
+    End Sub
     Private Sub ExtraireDonneesVersListView()
 
         lvProgramme.Items.Clear()
 
         Dim lvi As ListViewItem
+
 
         Try
 
@@ -56,95 +198,28 @@ Public Class frmProgramme
 
     End Sub
 
-    Private Sub frmProgramme_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
+    'Update
+    Private Sub UpdateProgramme()
+        BaseDeDonnee.GetBD().Query("UPDATE dbo.T_Programme SET pro_nom=@pro_nom, pro_nbr_unites=@pro_nbr_unites, pro_nbr_heures=@pro_nbr_heures WHERE pro_no=@pro_no", New Object() {
+            txtBoxNom.Text,
+            Convert.ToSingle(mtbNbrUnites.Text),
+            Convert.ToInt32(mtbNbrHeures.Text),
+            mtbNoProgramme.Text
+        })
+    End Sub
 
-        BaseDeDonnee.GetBD().Dispose()
+    'Delete
+    Private Sub SupprimerProgramme(noProgramme As String, nomProg As String)
+
+        BaseDeDonnee.GetBD().Query("DELETE FROM dbo.T_Programme WHERE pro_no=@pro_no", New Object() {noProgramme})
+        MsgBox("Le cours No : " & noProgramme & vbCrLf & "Du nom de : " & nomProg & vbCrLf & "A été supprimé avec succès", Title:="Succès")
+        ExtraireDonneesVersListView()
 
     End Sub
 
-    Private Sub lvProgramme_SelectedIndexChanged(sender As Object, e As EventArgs) Handles lvProgramme.SelectedIndexChanged
+#End Region
 
-        If lvProgramme.SelectedItems.Count > 0 Then
-
-            Dim idCours As String
-
-            idCours = lvProgramme.SelectedItems.Item(0).SubItems.Item(0).Text.ToString()
-
-            DebarrerControles(btnModifier, btnEnlever)
-            ChargerProgrammeFormulaire(idCours)
-            ChargerEtudiantsListView(idCours)
-        Else
-            BarrerControles(btnModifier, btnEnlever)
-        End If
-
-    End Sub
-
-    Private Sub ChargerEtudiantsListView(idCours As String)
-
-        lvEtudiants.Items.Clear()
-
-        Dim lvi As ListViewItem
-
-        Try
-
-            Using dr = BaseDeDonnee.GetBD().Query("SELECT * FROM dbo.T_etudiants WHERE pro_no=@pro_no", New Object() {idCours}).GetReader()
-
-                Do While dr.Read()
-
-                    lvi = New ListViewItem(dr("etu_da").ToString())
-                    lvi.SubItems.Add(dr("pro_no").ToString())
-                    lvi.SubItems.Add(dr("etu_prenom").ToString())
-                    lvi.SubItems.Add(dr("etu_nom").ToString())
-
-                    lvEtudiants.Items.Add(lvi)
-
-                Loop
-
-            End Using
-
-
-        Catch sqlEx As SqlException
-            MsgBox("Une erreur est survenue lors de la connexion en lien avec SQL : " & sqlEx.Message & " Erreur No : " & sqlEx.Number)
-
-        Catch ex As Exception
-            MsgBox("Une erreur autre est survenue lors de la connexion : " & ex.Message)
-
-        End Try
-
-    End Sub
-
-    Private Sub ChargerProgrammeFormulaire(idCours As String)
-
-
-        Try
-
-            Using dr = BaseDeDonnee.GetBD().Query("SELECT * FROM dbo.T_programme WHERE pro_no=@pro_no", New Object() {idCours}).GetReader()
-
-                If dr.Read() Then
-
-                    mtbNoProgramme.Text = dr("pro_no").ToString()
-                    txtBoxNom.Text = dr("pro_nom").ToString()
-                    mtbNbrUnites.Text = dr("pro_nbr_unites").ToString()
-                    mtbNbrHeures.Text = dr("pro_nbr_heures").ToString()
-
-                End If
-
-            End Using
-
-
-        Catch Sqlex As SqlException
-            MsgBox("Une erreur est survenue avec SQL pour extraire les données dans le Formulaire : " & Sqlex.Message & " Numéro d'erreur : " & Sqlex.Number)
-
-        Catch ex As Exception
-            MsgBox("Une erreur est survenue pour extraire les données dans le Formulaire : " & ex.Message)
-
-
-        End Try
-
-
-
-    End Sub
-
+#Region "Début Bloc fonctions | Action des Boutons Click"
     Private Sub btnNouveau_Click(sender As Object, e As EventArgs) Handles btnNouveau.Click, btnNouveau.Click
 
         BarrerControles(btnModifier, btnEnlever, btnNouveau, lvProgramme)
@@ -154,50 +229,6 @@ Public Class frmProgramme
         mtbNoProgramme.Focus()
 
         btnOK.Tag = "Nouveau"
-
-    End Sub
-
-    Private Sub ViderFormulaire()
-        mtbNoProgramme.Clear()
-        txtBoxNom.Clear()
-        mtbNbrUnites.Clear()
-        mtbNbrHeures.Clear()
-    End Sub
-
-    Private Sub InsererNouveauProgramme()
-
-        Dim nbrHeures As Integer
-
-        If mtbNbrHeures.Text.Length = 0 Then
-            nbrHeures = 0
-        Else
-            nbrHeures = Convert.ToInt32(mtbNbrHeures.Text)
-        End If
-
-        BaseDeDonnee.GetBD().Query("INSERT INTO dbo.T_Programme (pro_no, pro_nom, pro_nbr_unites, pro_nbr_heures) Values(@pro_no, @pro_nom, @pro_nbr_unites, @pro_nbr_heures)", New Object() {
-            mtbNoProgramme.Text,
-            txtBoxNom.Text,
-            Convert.ToDecimal(mtbNbrUnites.Text),
-            nbrHeures
-        })
-
-        ViderFormulaire()
-
-    End Sub
-
-    Private Sub BarrerControles(ParamArray ctrls() As Control)
-
-        For Each control In ctrls
-            control.Enabled = False
-        Next
-
-    End Sub
-
-    Private Sub DebarrerControles(ParamArray ctrls() As Control)
-
-        For Each control In ctrls
-            control.Enabled = True
-        Next
 
     End Sub
 
@@ -234,15 +265,6 @@ Public Class frmProgramme
 
         btnOK.Tag = ""
 
-    End Sub
-
-    Private Sub UpdateProgramme()
-        BaseDeDonnee.GetBD().Query("UPDATE dbo.T_Programme SET pro_nom=@pro_nom, pro_nbr_unites=@pro_nbr_unites, pro_nbr_heures=@pro_nbr_heures WHERE pro_no=@pro_no", New Object() {
-            txtBoxNom.Text,
-            Convert.ToSingle(mtbNbrUnites.Text),
-            Convert.ToInt32(mtbNbrHeures.Text),
-            mtbNoProgramme.Text
-        })
     End Sub
 
     Private Sub btnModifier_Click(sender As Object, e As EventArgs) Handles btnModifier.Click
@@ -286,13 +308,10 @@ Public Class frmProgramme
 
     End Sub
 
-    Private Sub SupprimerProgramme(noProgramme As String, nomProg As String)
+#End Region
 
-        BaseDeDonnee.GetBD().Query("DELETE FROM dbo.T_Programme WHERE pro_no=@pro_no", New Object() {noProgramme})
-        MsgBox("Le cours No : " & noProgramme & vbCrLf & "Du nom de : " & nomProg & vbCrLf & "A été supprimé avec succès", Title:="Succès")
-        ExtraireDonneesVersListView()
+#Region "Début Bloc fonctions | Validated - Validating"
 
-    End Sub
 
     Private Sub mtbNoProgramme_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles mtbNoProgramme.Validating
         If mtbNoProgramme.Text.Length < 6 Then
@@ -326,4 +345,7 @@ Public Class frmProgramme
     Private Sub mtbNbrUnites_Validated(sender As Object, e As EventArgs) Handles mtbNbrUnites.Validated
         errorProv.SetError(mtbNbrUnites, String.Empty)
     End Sub
+#End Region
+
+
 End Class

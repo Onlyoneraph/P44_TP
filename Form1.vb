@@ -44,8 +44,13 @@
         quitter = MessageBox.Show("Souhaitez-vous fermer le logiciel?", "Quitter", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
 
         If quitter = DialogResult.Yes Then
+            BaseDeDonnee.GetBD().Dispose()
             Application.Exit()
         End If
 
+    End Sub
+
+    Private Sub frmPrincipal_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
+        BaseDeDonnee.GetBD().Dispose()
     End Sub
 End Class
