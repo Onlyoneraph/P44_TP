@@ -2,13 +2,17 @@
 
     Private frmProgramme As Form = Nothing
     Private frmEtudiant As Form = Nothing
+    Dim ds As New DataSet("tp_p44")
+
+    Dim modeConnecte As Boolean
 
     Private Sub ProgrammeToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ProgrammeToolStripMenuItem.Click
 
         If frmProgramme Is Nothing OrElse frmProgramme.IsDisposed Then
 
-            frmProgramme = New frmProgramme
+            frmProgramme = New frmProgramme(ds)
             frmProgramme.MdiParent = Me
+            frmProgramme.Tag = modeConnecte
             frmProgramme.Show()
 
         Else
@@ -23,8 +27,9 @@
 
         If frmEtudiant Is Nothing OrElse frmEtudiant.IsDisposed Then
 
-            frmEtudiant = New frmEtudiants
+            frmEtudiant = New frmEtudiants(ds)
             frmEtudiant.MdiParent = Me
+            frmEtudiant.Tag = modeConnecte
             frmEtudiant.Show()
 
         Else
@@ -53,4 +58,18 @@
     Private Sub frmPrincipal_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
         BaseDeDonnee.GetBD().Dispose()
     End Sub
+
+    Private Sub frmPrincipal_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
+        If MessageBox.Show("Souhaitez-vous utiliser le mode connecté?", "Connexion", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.Yes Then
+            modeConnecte = True
+            Me.Text = "Gestion (Mode connecté)"
+        Else
+            modeConnecte = False
+            Me.Text = "Gestion (Mode déconnecté)"
+        End If
+
+
+    End Sub
+
 End Class

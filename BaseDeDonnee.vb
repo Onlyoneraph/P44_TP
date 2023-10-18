@@ -1,5 +1,4 @@
 ﻿Imports System.Text.RegularExpressions
-Imports Microsoft.Data
 Imports Microsoft.Data.SqlClient
 
 Public Class BaseDeDonnee

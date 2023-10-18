@@ -3,13 +3,61 @@
 Public Class frmProgramme
 
     Dim errorProv As New ErrorProvider()
+    Dim modeConnecte As Boolean = Me.Tag
+    Dim cn As SqlConnection
+
+    Dim sqlCommandTblProgrammes As SqlCommand
+    Dim sqlDataTblProgrammes As SqlDataAdapter
+    Dim bindSourceProgrammes As BindingSource
+
+    Dim sqlCommandTblEtudiants As SqlCommand
+    Dim sqlDataTblEtudiants As SqlDataAdapter
+    Dim bindSourceEtudiants As BindingSource
+
+    'Assignation d'une Propriétée pour reçevoir le DataSet
+    Public Sub New(ByVal ds As DataSet)
+        InitializeComponent()
+        Me.ds = ds
+    End Sub
+    Public Property ds As DataSet
+
 
     ' Chargement du Formulaire - Initialisation
     Private Sub frmProgramme_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
-        BaseDeDonnee.GetBD()
+        If modeConnecte Then
 
-        ExtraireDonneesVersListView()
+            BaseDeDonnee.GetBD()
+
+            ExtraireDonneesVersListView()
+
+            dgvEtudiants.Visible = False
+            dgvProgramme.Visible = False
+            lvEtudiants.Visible = True
+            lvProgramme.Visible = True
+
+        Else
+
+            cn = New SqlConnection(My.Settings.ConnectionString)
+
+            sqlCommandTblProgrammes = New SqlCommand("SELECT * FROM dbo.T_programme", cn)
+            sqlDataTblProgrammes = New SqlDataAdapter(sqlCommandTblProgrammes)
+            bindSourceProgrammes = New BindingSource()
+
+            sqlCommandTblEtudiants = New SqlCommand("SELECT * FROM dbo.T_etudiants", cn)
+            sqlDataTblEtudiants = New SqlDataAdapter(sqlCommandTblEtudiants)
+            bindSourceEtudiants = New BindingSource()
+
+            DisconnectedExtraireDonneesVersListView()
+
+            dgvEtudiants.Visible = True
+            dgvProgramme.Visible = True
+            lvEtudiants.Visible = False
+            lvProgramme.Visible = False
+
+        End If
+
+
 
     End Sub
 
@@ -345,7 +393,93 @@ Public Class frmProgramme
     Private Sub mtbNbrUnites_Validated(sender As Object, e As EventArgs) Handles mtbNbrUnites.Validated
         errorProv.SetError(mtbNbrUnites, String.Empty)
     End Sub
+
 #End Region
 
 
+    ' Mode Déconnecté
+
+
+    Private Sub DisconnectedExtraireDonneesVersListView()
+
+        InitialiserDGVProgrammeEtEtudiants()
+
+        sqlDataTblProgrammes.Fill(ds, "T_programme")
+        sqlDataTblEtudiants.Fill(ds, "T_etudiants")
+
+        bindSourceProgrammes.DataSource = ds
+        bindSourceProgrammes.DataMember = "T_programme"
+
+        bindSourceEtudiants.DataSource = ds
+        bindSourceEtudiants.DataMember = "T_etudiants"
+
+        mtbNoProgramme.DataBindings.Add(New Binding("Text", bindSourceProgrammes, "pro_no", True))
+        txtBoxNom.DataBindings.Add(New Binding("Text", bindSourceProgrammes, "pro_nom", True))
+        mtbNbrUnites.DataBindings.Add(New Binding("Text", bindSourceProgrammes, "pro_nbr_unites", True))
+        mtbNbrHeures.DataBindings.Add(New Binding("Text", bindSourceProgrammes, "pro_nbr_heures", True))
+
+        dgvProgramme.DataSource = bindSourceProgrammes
+        dgvEtudiants.DataSource = bindSourceEtudiants
+
+    End Sub
+
+    Private Sub InitialiserDGVProgrammeEtEtudiants()
+
+        dgvProgramme.ColumnCount = 4
+
+        dgvProgramme.AutoGenerateColumns = False
+
+        dgvProgramme.Columns(0).Name = "dgvProgrammeColID"
+        dgvProgramme.Columns(0).HeaderText = "No"
+        dgvProgramme.Columns(0).DataPropertyName = "pro_no"
+
+        dgvProgramme.Columns(1).Name = "dgvProgrammeColNom"
+        dgvProgramme.Columns(1).HeaderText = "Nom"
+        dgvProgramme.Columns(1).DataPropertyName = "pro_nom"
+
+        dgvProgramme.Columns(2).Name = "dgvProgrammeColNbrUnites"
+        dgvProgramme.Columns(2).HeaderText = "Nbr. Unités"
+        dgvProgramme.Columns(2).DataPropertyName = "pro_nbr_unites"
+
+        dgvProgramme.Columns(3).Name = "dgvProgrammeColNbrHeures"
+        dgvProgramme.Columns(3).HeaderText = "Nbr. Heures"
+        dgvProgramme.Columns(3).DataPropertyName = "pro_nbr_heures"
+
+
+        dgvEtudiants.ColumnCount = 4
+
+        dgvEtudiants.AutoGenerateColumns = False
+
+        dgvEtudiants.Columns(0).Name = "dgvEtudiantsColID"
+        dgvEtudiants.Columns(0).HeaderText = "DA"
+        dgvEtudiants.Columns(0).DataPropertyName = "etu_da"
+
+        dgvEtudiants.Columns(1).Name = "dgvEtudiantsColNoProg"
+        dgvEtudiants.Columns(1).HeaderText = "No Prog."
+        dgvEtudiants.Columns(1).DataPropertyName = "pro_no"
+
+        dgvEtudiants.Columns(2).Name = "dgvEtudiantsColPrenom"
+        dgvEtudiants.Columns(2).HeaderText = "Prénom"
+        dgvEtudiants.Columns(2).DataPropertyName = "etu_prenom"
+
+        dgvEtudiants.Columns(3).Name = "dgvEtudiantsColNom"
+        dgvEtudiants.Columns(3).HeaderText = "Nom"
+        dgvEtudiants.Columns(3).DataPropertyName = "etu_nom"
+
+    End Sub
+
+    Private Sub dgvProgramme_SelectionChanged(sender As Object, e As EventArgs) Handles dgvProgramme.SelectionChanged
+
+        If dgvProgramme.SelectedRows.Count > 0 Then
+            If Not IsDBNull(dgvProgramme.SelectedRows(0).Cells(0).Value) Then
+                Dim idProgramme As String = dgvProgramme.SelectedRows(0).Cells(0).Value.ToString()
+                ChargerEtudiantsDgv(idProgramme)
+            End If
+        End If
+
+    End Sub
+
+    Private Sub ChargerEtudiantsDgv(idProgramme As String)
+        bindSourceEtudiants.Filter = $"[pro_no] = '{idProgramme}'"
+    End Sub
 End Class

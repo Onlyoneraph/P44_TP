@@ -46,7 +46,11 @@ Partial Class frmProgramme
         colNbrUnit = New ColumnHeader()
         colNbrHrs = New ColumnHeader()
         lvProgramme = New ListView()
+        dgvProgramme = New DataGridView()
+        dgvEtudiants = New DataGridView()
         gbProgramme.SuspendLayout()
+        CType(dgvProgramme, ComponentModel.ISupportInitialize).BeginInit()
+        CType(dgvEtudiants, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
         ' gbProgramme
@@ -251,11 +255,39 @@ Partial Class frmProgramme
         lvProgramme.UseCompatibleStateImageBehavior = False
         lvProgramme.View = View.Details
         ' 
+        ' dgvProgramme
+        ' 
+        dgvProgramme.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        dgvProgramme.Location = New Point(13, 226)
+        dgvProgramme.MultiSelect = False
+        dgvProgramme.Name = "dgvProgramme"
+        dgvProgramme.ReadOnly = True
+        dgvProgramme.RowHeadersWidth = 62
+        dgvProgramme.RowTemplate.Height = 33
+        dgvProgramme.SelectionMode = DataGridViewSelectionMode.FullRowSelect
+        dgvProgramme.Size = New Size(633, 378)
+        dgvProgramme.TabIndex = 8
+        ' 
+        ' dgvEtudiants
+        ' 
+        dgvEtudiants.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        dgvEtudiants.Location = New Point(661, 12)
+        dgvEtudiants.MultiSelect = False
+        dgvEtudiants.Name = "dgvEtudiants"
+        dgvEtudiants.ReadOnly = True
+        dgvEtudiants.RowHeadersWidth = 62
+        dgvEtudiants.RowTemplate.Height = 33
+        dgvEtudiants.SelectionMode = DataGridViewSelectionMode.FullRowSelect
+        dgvEtudiants.Size = New Size(782, 592)
+        dgvEtudiants.TabIndex = 9
+        ' 
         ' frmProgramme
         ' 
         AutoScaleDimensions = New SizeF(10F, 25F)
         AutoScaleMode = AutoScaleMode.Font
         ClientSize = New Size(1455, 616)
+        Controls.Add(dgvEtudiants)
+        Controls.Add(dgvProgramme)
         Controls.Add(btnEnlever)
         Controls.Add(btnModifier)
         Controls.Add(btnAnnuler)
@@ -268,6 +300,8 @@ Partial Class frmProgramme
         Text = "Gestion des programmes"
         gbProgramme.ResumeLayout(False)
         gbProgramme.PerformLayout()
+        CType(dgvProgramme, ComponentModel.ISupportInitialize).EndInit()
+        CType(dgvEtudiants, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
     End Sub
 
@@ -305,4 +339,6 @@ Partial Class frmProgramme
     Friend WithEvents GroupBox1 As GroupBox
     Friend WithEvents rbMasculinEtu As RadioButton
     Friend WithEvents cbNoProgEtu As ComboBox
+    Friend WithEvents dgvProgramme As DataGridView
+    Friend WithEvents dgvEtudiants As DataGridView
 End Class

@@ -3,15 +3,46 @@
 Public Class frmEtudiants
 
     Dim errorProv As New ErrorProvider()
+    Dim modeConnecte As Boolean = Me.Tag
+    Dim cn As SqlConnection
+
+    'Assignation d'une Propriétée pour reçevoir le DataSet
+    Public Sub New(ByVal ds As DataSet)
+        InitializeComponent()
+        Me.ds = ds
+    End Sub
+    Public Property ds As DataSet
+
 
     ' Chargement du Formulaire - Initialisation
     Private Sub frmEtudiants_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
-        BaseDeDonnee.GetBD()
+        If modeConnecte Then
 
-        InitialiserNoProg()
+            BaseDeDonnee.GetBD()
 
-        ExtraireDonneesVersListViewEtu()
+            InitialiserNoProg()
+
+            ExtraireDonneesVersListViewEtu()
+
+            lvEtudiantsEtu.Visible = True
+            dgvEtudiants.Visible = False
+
+        Else
+
+            cn = New SqlConnection(My.Settings.ConnectionString)
+
+            DisconnectedInitialiserNoProg()
+
+            DisconnectedExtraireDonneesVersListViewEtu()
+
+            dgvEtudiants.Visible = True
+            lvEtudiantsEtu.Visible = False
+
+
+        End If
+
+
 
         If lvEtudiantsEtu.Items.Count > 0 Then
 
@@ -470,10 +501,91 @@ Public Class frmEtudiants
 #End Region
 
 
+    ' Mode Déconnecté
+
+#Region "Disconnected - Début Bloc fonctions | Action vers la DB - CRUD"
+
+    Private Sub DisconnectedInitialiserNoProg()
+
+    End Sub
+
+    Private Sub DisconnectedExtraireDonneesVersListViewEtu()
 
 
+        InitialiserDGVEtudiants()
+
+        Dim sqlCommandTblEtudiants As New SqlCommand("SELECT * FROM dbo.T_etudiants", cn)
+        Dim sqlDataTblEtudiants As New SqlDataAdapter(sqlCommandTblEtudiants)
+        Dim bindSourceEtudiants As New BindingSource()
+
+        sqlDataTblEtudiants.Fill(ds, "T_etudiants")
+
+        bindSourceEtudiants.DataSource = ds
+        bindSourceEtudiants.DataMember = "T_etudiants"
+
+        mtbNoDAEtu.DataBindings.Add(New Binding("Text", bindSourceEtudiants, "etu_da", True))
+        cbNoProgrammeEtu.DataBindings.Add(New Binding("Text", bindSourceEtudiants, "pro_no", True))
+        txtboxPrenomEtu.DataBindings.Add(New Binding("Text", bindSourceEtudiants, "etu_prenom", True))
+        txtBoxNomEtu.DataBindings.Add(New Binding("Text", bindSourceEtudiants, "etu_nom", True))
+        txtBoxAdresseEtu.DataBindings.Add(New Binding("Text", bindSourceEtudiants, "etu_adresse", True))
+        txtBoxVilleEtu.DataBindings.Add(New Binding("Text", bindSourceEtudiants, "etu_ville", True))
+        cbProvinceEtu.DataBindings.Add(New Binding("Text", bindSourceEtudiants, "etu_province", True))
+        mtbCPEtu.DataBindings.Add(New Binding("Text", bindSourceEtudiants, "etu_codepostal", True))
+        mtbTelEtu.DataBindings.Add(New Binding("Text", bindSourceEtudiants, "etu_telephone", True))
+
+        dgvEtudiants.DataSource = bindSourceEtudiants
+
+    End Sub
+
+    Private Sub InitialiserDGVEtudiants()
+        dgvEtudiants.ColumnCount = 10
+
+        dgvEtudiants.AutoGenerateColumns = False
+
+        dgvEtudiants.Columns(0).Name = "dgvEtudiantsColID"
+        dgvEtudiants.Columns(0).HeaderText = "DA"
+        dgvEtudiants.Columns(0).DataPropertyName = "etu_da"
+
+        dgvEtudiants.Columns(1).Name = "dgvEtudiantsColNoProg"
+        dgvEtudiants.Columns(1).HeaderText = "No Prog."
+        dgvEtudiants.Columns(1).DataPropertyName = "pro_no"
+
+        dgvEtudiants.Columns(2).Name = "dgvEtudiantsColPrenom"
+        dgvEtudiants.Columns(2).HeaderText = "Prénom"
+        dgvEtudiants.Columns(2).DataPropertyName = "etu_prenom"
+
+        dgvEtudiants.Columns(3).Name = "dgvEtudiantsColNom"
+        dgvEtudiants.Columns(3).HeaderText = "Nom"
+        dgvEtudiants.Columns(3).DataPropertyName = "etu_nom"
+
+        dgvEtudiants.Columns(4).Name = "dgvEtudiantsColSexe"
+        dgvEtudiants.Columns(4).HeaderText = "Sexe"
+        dgvEtudiants.Columns(4).DataPropertyName = "etu_sexe"
+
+        dgvEtudiants.Columns(5).Name = "dgvEtudiantsColAdresse"
+        dgvEtudiants.Columns(5).HeaderText = "Adresse"
+        dgvEtudiants.Columns(5).DataPropertyName = "etu_adresse"
+
+        dgvEtudiants.Columns(6).Name = "dgvEtudiantsColVille"
+        dgvEtudiants.Columns(6).HeaderText = "Ville"
+        dgvEtudiants.Columns(6).DataPropertyName = "etu_ville"
+
+        dgvEtudiants.Columns(7).Name = "dgvEtudiantsColCP"
+        dgvEtudiants.Columns(7).HeaderText = "Code Postal"
+        dgvEtudiants.Columns(7).DataPropertyName = "etu_codepostal"
+
+        dgvEtudiants.Columns(8).Name = "dgvEtudiantsColTel"
+        dgvEtudiants.Columns(8).HeaderText = "Téléphone"
+        dgvEtudiants.Columns(8).DataPropertyName = "etu_telephone"
+
+        dgvEtudiants.Columns(9).Name = "dgvEtudiantsColProvince"
+        dgvEtudiants.Columns(9).HeaderText = "Province"
+        dgvEtudiants.Columns(9).DataPropertyName = "etu_province"
+
+    End Sub
 
 
+#End Region
 
 
 

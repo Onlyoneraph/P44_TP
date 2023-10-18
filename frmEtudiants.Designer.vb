@@ -60,8 +60,10 @@ Partial Class frmEtudiants
         lblPrenomEtu = New Label()
         lblNomEtu = New Label()
         lblDaEtu = New Label()
+        dgvEtudiants = New DataGridView()
         gbEtudiant.SuspendLayout()
         gbSexeEtu.SuspendLayout()
+        CType(dgvEtudiants, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
         ' btnEnlever
@@ -393,11 +395,26 @@ Partial Class frmEtudiants
         lblDaEtu.TabIndex = 0
         lblDaEtu.Text = "DA :"
         ' 
+        ' dgvEtudiants
+        ' 
+        dgvEtudiants.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        dgvEtudiants.Location = New Point(12, 364)
+        dgvEtudiants.MultiSelect = False
+        dgvEtudiants.Name = "dgvEtudiants"
+        dgvEtudiants.ReadOnly = True
+        dgvEtudiants.RowHeadersWidth = 62
+        dgvEtudiants.RowTemplate.Height = 33
+        dgvEtudiants.SelectionMode = DataGridViewSelectionMode.FullRowSelect
+        dgvEtudiants.Size = New Size(1137, 378)
+        dgvEtudiants.TabIndex = 16
+        dgvEtudiants.Visible = False
+        ' 
         ' frmEtudiants
         ' 
         AutoScaleDimensions = New SizeF(10F, 25F)
         AutoScaleMode = AutoScaleMode.Font
         ClientSize = New Size(1161, 754)
+        Controls.Add(dgvEtudiants)
         Controls.Add(btnEnlever)
         Controls.Add(btnModifier)
         Controls.Add(btnAnnuler)
@@ -411,6 +428,7 @@ Partial Class frmEtudiants
         gbEtudiant.PerformLayout()
         gbSexeEtu.ResumeLayout(False)
         gbSexeEtu.PerformLayout()
+        CType(dgvEtudiants, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
     End Sub
 
@@ -452,4 +470,5 @@ Partial Class frmEtudiants
     Friend WithEvents lblCPEtu As Label
     Friend WithEvents lblAdresseEtu As Label
     Friend WithEvents cbNoProgrammeEtu As ComboBox
+    Friend WithEvents dgvEtudiants As DataGridView
 End Class
