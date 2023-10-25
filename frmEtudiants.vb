@@ -11,7 +11,23 @@ Public Class frmEtudiants
         InitializeComponent()
         Me.ds = ds
     End Sub
+
+    'Declaration des variables nécessaires au Mode Déconnecté
+    Dim sqlCommandTblEtudiants As SqlCommand
+    Dim sqlInsertCommandEtudiants As SqlCommand
+    Dim sqlUpdateCommandEtudiants As SqlCommand
+    Dim sqlDeleteCommandEtudiants As SqlCommand
+    Dim sqlDataTblEtudiants As SqlDataAdapter
+    Dim bindSourceEtudiants As BindingSource
+
+    Dim da As SqlDataAdapter
     Public Property ds As DataSet
+
+
+    Dim sqlCommandTblProgrammes As SqlCommand
+    Dim sqlDataTblProgrammes As SqlDataAdapter
+    Dim bindSourceProgrammes As BindingSource
+
 
 
     ' Chargement du Formulaire - Initialisation
@@ -28,28 +44,77 @@ Public Class frmEtudiants
             lvEtudiantsEtu.Visible = True
             dgvEtudiants.Visible = False
 
+            If lvEtudiantsEtu.Items.Count > 0 Then
+
+                lvEtudiantsEtu.SelectedIndices.Add(0)
+                lvEtudiantsEtu.Focus()
+
+            End If
+
         Else
-
-            cn = New SqlConnection(My.Settings.ConnectionString)
-
-            DisconnectedInitialiserNoProg()
-
-            DisconnectedExtraireDonneesVersListViewEtu()
 
             dgvEtudiants.Visible = True
             lvEtudiantsEtu.Visible = False
 
+            ds = New DataSet("tp_p44")
+            da = New SqlDataAdapter()
+
+            cn = New SqlConnection(My.Settings.ConnectionString)
+
+            sqlCommandTblEtudiants = New SqlCommand("SELECT * FROM dbo.T_etudiants", cn)
+            sqlInsertCommandEtudiants = New SqlCommand("INSERT INTO dbo.T_etudiants (etu_da, pro_no, etu_nom, etu_prenom, etu_sexe, etu_adresse, etu_ville, etu_province, etu_telephone, etu_codepostal) Values(@etu_da, @pro_no, @etu_nom, @etu_prenom, @etu_sexe, @etu_adresse, @etu_ville, @etu_province, @etu_telephone, @etu_codepostal)", cn)
+            sqlUpdateCommandEtudiants = New SqlCommand("UPDATE dbo.T_etudiants SET pro_no=@pro_no, etu_nom=@etu_nom, etu_prenom=@etu_prenom, etu_sexe=@etu_sexe, etu_adresse=@etu_adresse, etu_ville=@etu_ville, etu_province=@etu_province, etu_codepostal=@etu_codepostal, etu_telephone=@etu_telephone WHERE etu_da=@etu_da", cn)
+            sqlDeleteCommandEtudiants = New SqlCommand("DELETE FROM dbo.T_etudiants WHERE etu_da=@etu_da", cn)
+            sqlDataTblEtudiants = New SqlDataAdapter(sqlCommandTblEtudiants)
+            bindSourceEtudiants = New BindingSource()
+
+            sqlCommandTblProgrammes = New SqlCommand("SELECT * FROM dbo.T_programme", cn)
+            sqlDataTblProgrammes = New SqlDataAdapter(sqlCommandTblProgrammes)
+            bindSourceProgrammes = New BindingSource()
+
+
+            'Assignation des Parametres pour mon CUD Programme... Qui fera le lien avec la Query Insert, Update, Delete
+            sqlInsertCommandEtudiants.Parameters.AddRange({
+            New SqlParameter("@etu_da", SqlDbType.VarChar, 0, "etu_da"),
+            New SqlParameter("@pro_no", SqlDbType.VarChar, 0, "pro_no"),
+            New SqlParameter("@etu_nom", SqlDbType.VarChar, 0, "etu_nom"),
+            New SqlParameter("@etu_prenom", SqlDbType.VarChar, 0, "etu_prenom"),
+            New SqlParameter("@etu_sexe", SqlDbType.Char, 0, "etu_sexe"),
+            New SqlParameter("@etu_adresse", SqlDbType.VarChar, 0, "etu_adresse"),
+            New SqlParameter("@etu_ville", SqlDbType.VarChar, 0, "etu_ville"),
+            New SqlParameter("@etu_province", SqlDbType.VarChar, 0, "etu_province"),
+            New SqlParameter("@etu_telephone", SqlDbType.VarChar, 0, "etu_telephone"),
+            New SqlParameter("@etu_codepostal", SqlDbType.VarChar, 0, "etu_codepostal")
+        })
+
+
+            sqlUpdateCommandEtudiants.Parameters.AddRange({
+            New SqlParameter("@pro_no", SqlDbType.VarChar, 0, "pro_no"),
+            New SqlParameter("@etu_nom", SqlDbType.VarChar, 0, "etu_nom"),
+            New SqlParameter("@etu_prenom", SqlDbType.VarChar, 0, "etu_prenom"),
+            New SqlParameter("@etu_sexe", SqlDbType.Char, 0, "etu_sexe"),
+            New SqlParameter("@etu_adresse", SqlDbType.VarChar, 0, "etu_adresse"),
+            New SqlParameter("@etu_ville", SqlDbType.VarChar, 0, "etu_ville"),
+            New SqlParameter("@etu_province", SqlDbType.VarChar, 0, "etu_province"),
+            New SqlParameter("@etu_codepostal", SqlDbType.VarChar, 0, "etu_codepostal"),
+            New SqlParameter("@etu_telephone", SqlDbType.VarChar, 0, "etu_telephone"),
+            New SqlParameter("@etu_da", SqlDbType.VarChar, 0, "etu_da")
+        })
+
+            sqlDeleteCommandEtudiants.Parameters.Add("@etu_da", SqlDbType.VarChar, 0, "etu_da")
+
+            sqlDataTblEtudiants.InsertCommand = sqlInsertCommandEtudiants
+            sqlDataTblEtudiants.UpdateCommand = sqlUpdateCommandEtudiants
+            sqlDataTblEtudiants.DeleteCommand = sqlDeleteCommandEtudiants
+
+
+            DisconnectedExtraireDonneesVersDataGridViewEtu()
+
+            DisconnectedInitialiserNoProg()
+
 
         End If
 
-
-
-        If lvEtudiantsEtu.Items.Count > 0 Then
-
-            lvEtudiantsEtu.SelectedIndices.Add(0)
-            lvEtudiantsEtu.Focus()
-
-        End If
 
     End Sub
 
@@ -370,81 +435,145 @@ Public Class frmEtudiants
 
     Private Sub btnNouveau_Click(sender As Object, e As EventArgs) Handles btnNouveau.Click
 
-        DebarrerControles(btnOK, btnAnnuler, gbEtudiant, gbSexeEtu, mtbNoDAEtu)
-        BarrerControles(btnNouveau, btnModifier, btnEnlever, lvEtudiantsEtu)
-        ViderFormulaire()
+        If modeConnecte Then
 
-        btnOK.Tag = "Nouveau"
+            BarrerControles(lvEtudiantsEtu)
+            ViderFormulaire()
+
+            btnOK.Tag = "Nouveau"
+
+        Else
+
+            bindSourceEtudiants.AddNew()
+            BarrerControles(dgvEtudiants)
+            rbFemininEtu.Checked = False
+            rbMasculinEtu.Checked = False
+
+        End If
+
+        DebarrerControles(btnOK, btnAnnuler, gbEtudiant, gbSexeEtu, mtbNoDAEtu)
+        BarrerControles(btnNouveau, btnModifier, btnEnlever)
+
 
     End Sub
 
     Private Sub btnOK_Click(sender As Object, e As EventArgs) Handles btnOK.Click
 
-        If btnOK.Tag = "Nouveau" Then
+        If modeConnecte Then
 
+            If btnOK.Tag = "Nouveau" Then
+
+                Try
+
+                    InsererNouvelEtudiant()
+
+                Catch ex As Exception
+                    MsgBox("Une erreur est survenue lors de l'insertion du programme dans la DB : " & ex.Message)
+                End Try
+
+            ElseIf btnOK.Tag = "Modifier" Then
+
+                Try
+
+                    UpdateEtudiant()
+
+                Catch ex As Exception
+
+                    MsgBox("Une erreur est survenue lors de la modification du programme dans la DB")
+
+                End Try
+
+            End If
+
+
+            DebarrerControles(lvEtudiantsEtu)
+            ExtraireDonneesVersListViewEtu()
+
+            btnOK.Tag = ""
+
+        Else
             Try
 
-                InsererNouvelEtudiant()
+                DisconnectedUpdateSource("T_etudiants")
 
             Catch ex As Exception
                 MsgBox("Une erreur est survenue lors de l'insertion du programme dans la DB : " & ex.Message)
             End Try
 
-        ElseIf btnOK.Tag = "Modifier" Then
-
-            Try
-
-                UpdateEtudiant()
-
-            Catch ex As Exception
-
-                MsgBox("Une erreur est survenue lors de la modification du programme dans la DB")
-
-            End Try
-
+            DebarrerControles(dgvEtudiants)
         End If
 
-
-        DebarrerControles(btnNouveau, btnEnlever, btnModifier, lvEtudiantsEtu)
+        DebarrerControles(btnNouveau, btnEnlever, btnModifier)
         BarrerControles(btnOK, btnAnnuler, gbEtudiant, mtbNoDAEtu)
-        ExtraireDonneesVersListViewEtu()
 
-        btnOK.Tag = ""
+
 
     End Sub
 
     Private Sub btnModifier_Click(sender As Object, e As EventArgs) Handles btnModifier.Click
 
-        DebarrerControles(btnOK, btnAnnuler, gbEtudiant, gbSexeEtu)
-        BarrerControles(btnNouveau, btnModifier, btnEnlever, lvEtudiantsEtu)
+        If modeConnecte Then
+            BarrerControles(lvEtudiantsEtu)
+            btnOK.Tag = "Modifier"
+        Else
+            BarrerControles(dgvEtudiants)
+        End If
 
-        btnOK.Tag = "Modifier"
+        DebarrerControles(btnOK, btnAnnuler, gbEtudiant)
+        BarrerControles(btnModifier, btnEnlever, btnNouveau)
+
 
     End Sub
 
     Private Sub btnAnnuler_Click(sender As Object, e As EventArgs) Handles btnAnnuler.Click
 
-        DebarrerControles(btnModifier, btnEnlever, btnNouveau, lvEtudiantsEtu)
+        If modeConnecte Then
+
+            DebarrerControles(lvEtudiantsEtu)
+
+            ViderFormulaire()
+
+            If lvEtudiantsEtu.Items.Count > 0 Then
+
+                lvEtudiantsEtu.SelectedIndices.Add(0)
+                lvEtudiantsEtu.Focus()
+
+            End If
+
+        Else
+            bindSourceEtudiants.CancelEdit()
+            DebarrerControles(dgvEtudiants)
+        End If
+
+        DebarrerControles(btnModifier, btnEnlever, btnNouveau)
         BarrerControles(btnOK, btnAnnuler, gbEtudiant)
 
-        ViderFormulaire()
-
-        If lvEtudiantsEtu.Items.Count > 0 Then
-
-            lvEtudiantsEtu.SelectedIndices.Add(0)
-            lvEtudiantsEtu.Focus()
-
-        End If
 
     End Sub
 
     Private Sub btnEnlever_Click(sender As Object, e As EventArgs) Handles btnEnlever.Click
 
+
         Dim suppression As DialogResult = MessageBox.Show("Voulez-vous vraiment supprimer l'étudiant : " & txtboxPrenomEtu.Text & " " & txtBoxNomEtu.Text & vbCrLf & "DA : " & mtbNoDAEtu.Text, "Suppression", MessageBoxButtons.YesNo)
 
         If suppression = DialogResult.Yes Then
 
-            supprimerEtudiant(mtbNoDAEtu.Text, txtboxPrenomEtu.Text, txtBoxNomEtu.Text)
+            If modeConnecte Then
+
+                supprimerEtudiant(mtbNoDAEtu.Text, txtboxPrenomEtu.Text, txtBoxNomEtu.Text)
+
+            Else
+
+                Try
+                    bindSourceEtudiants.RemoveCurrent()
+                    DisconnectedUpdateSource("T_etudiants")
+                Catch ex As Exception
+                    MsgBox("Une erreur est survenue lors de la suppression d'un étudiant : " & ex.Message)
+                End Try
+
+            End If
+
+
 
         End If
 
@@ -505,34 +634,59 @@ Public Class frmEtudiants
 
 #Region "Disconnected - Début Bloc fonctions | Action vers la DB - CRUD"
 
+    Private Sub DisconnectedUpdateSource(tableName As String)
+
+        Try
+
+            If tableName = "T_etudiants" Then
+                bindSourceEtudiants.EndEdit()
+                dgvEtudiants.EndEdit()
+                sqlDataTblEtudiants.Update(ds.Tables(tableName))
+            End If
+
+        Catch ex As Exception
+            MsgBox("Une erreur est survenue lors de la mise a jours vers la DB : " & ex.Message)
+
+            bindSourceEtudiants.CancelEdit()
+            ds.Tables(tableName).RejectChanges()
+        End Try
+
+    End Sub
+
     Private Sub DisconnectedInitialiserNoProg()
 
     End Sub
 
-    Private Sub DisconnectedExtraireDonneesVersListViewEtu()
+    Private Sub DisconnectedExtraireDonneesVersDataGridViewEtu()
 
 
         InitialiserDGVEtudiants()
 
-        Dim sqlCommandTblEtudiants As New SqlCommand("SELECT * FROM dbo.T_etudiants", cn)
-        Dim sqlDataTblEtudiants As New SqlDataAdapter(sqlCommandTblEtudiants)
-        Dim bindSourceEtudiants As New BindingSource()
-
         sqlDataTblEtudiants.Fill(ds, "T_etudiants")
+        sqlDataTblProgrammes.Fill(ds, "T_programmes")
 
         bindSourceEtudiants.DataSource = ds
         bindSourceEtudiants.DataMember = "T_etudiants"
 
+        bindSourceProgrammes.DataSource = ds
+        bindSourceProgrammes.DataMember = "T_programmes"
+
+
         mtbNoDAEtu.DataBindings.Add(New Binding("Text", bindSourceEtudiants, "etu_da", True))
-        cbNoProgrammeEtu.DataBindings.Add(New Binding("Text", bindSourceEtudiants, "pro_no", True))
+        cbNoProgrammeEtu.DataBindings.Add(New Binding("SelectedValue", bindSourceEtudiants, "pro_no", True))
         txtboxPrenomEtu.DataBindings.Add(New Binding("Text", bindSourceEtudiants, "etu_prenom", True))
         txtBoxNomEtu.DataBindings.Add(New Binding("Text", bindSourceEtudiants, "etu_nom", True))
         txtBoxAdresseEtu.DataBindings.Add(New Binding("Text", bindSourceEtudiants, "etu_adresse", True))
         txtBoxVilleEtu.DataBindings.Add(New Binding("Text", bindSourceEtudiants, "etu_ville", True))
         cbProvinceEtu.DataBindings.Add(New Binding("Text", bindSourceEtudiants, "etu_province", True))
+        gbSexeEtu.DataBindings.Add(New Binding("Tag", bindSourceEtudiants, "etu_sexe", True))
         mtbCPEtu.DataBindings.Add(New Binding("Text", bindSourceEtudiants, "etu_codepostal", True))
         mtbTelEtu.DataBindings.Add(New Binding("Text", bindSourceEtudiants, "etu_telephone", True))
 
+        cbNoProgrammeEtu.DisplayMember = "pro_no"
+        cbNoProgrammeEtu.ValueMember = "pro_no"
+
+        cbNoProgrammeEtu.DataSource = bindSourceProgrammes
         dgvEtudiants.DataSource = bindSourceEtudiants
 
     End Sub
@@ -582,6 +736,49 @@ Public Class frmEtudiants
         dgvEtudiants.Columns(9).HeaderText = "Province"
         dgvEtudiants.Columns(9).DataPropertyName = "etu_province"
 
+    End Sub
+
+    Private Sub dgvEtudiants_SelectionChanged(sender As Object, e As EventArgs) Handles dgvEtudiants.SelectionChanged
+
+        If dgvEtudiants.SelectedRows.Count > 0 Then
+            If Not IsDBNull(dgvEtudiants.SelectedRows(0).Cells(0).Value) Then
+                DebarrerControles(btnModifier, btnEnlever)
+            Else
+                BarrerControles(btnModifier, btnEnlever)
+            End If
+            CocherSexeEtudiant()
+        End If
+
+    End Sub
+
+    Private Sub CocherSexeEtudiant()
+        If Not IsDBNull(gbSexeEtu.Tag) Then
+            If gbSexeEtu.Tag = "F" Then
+                rbFemininEtu.Checked = True
+            ElseIf gbSexeEtu.Tag = "M" Then
+                rbMasculinEtu.Checked = True
+            End If
+        Else
+            rbFemininEtu.Checked = False
+            rbMasculinEtu.Checked = False
+        End If
+
+    End Sub
+
+    Private Sub rbFemininEtu_CheckedChanged(sender As Object, e As EventArgs) Handles rbFemininEtu.CheckedChanged
+        InscrireTagGBSexe()
+    End Sub
+
+    Private Sub InscrireTagGBSexe()
+        If rbFemininEtu.Checked Then
+            gbSexeEtu.Tag = "F"
+        ElseIf rbMasculinEtu.Checked Then
+            gbSexeEtu.Tag = "M"
+        End If
+    End Sub
+
+    Private Sub rbMasculinEtu_CheckedChanged(sender As Object, e As EventArgs) Handles rbMasculinEtu.CheckedChanged
+        InscrireTagGBSexe()
     End Sub
 
 

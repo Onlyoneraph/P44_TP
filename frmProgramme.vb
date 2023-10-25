@@ -1,4 +1,5 @@
-﻿Imports Microsoft.Data.SqlClient
+﻿Imports System.Data.Common
+Imports Microsoft.Data.SqlClient
 
 Public Class frmProgramme
 
@@ -6,7 +7,11 @@ Public Class frmProgramme
     Dim modeConnecte As Boolean = Me.Tag
     Dim cn As SqlConnection
 
+    'Declaration des variables nécessaires au Mode Déconnecté
     Dim sqlCommandTblProgrammes As SqlCommand
+    Dim sqlInsertCommandProgrammes As SqlCommand
+    Dim sqlUpdateCommandProgrammes As SqlCommand
+    Dim sqlDeleteCommandProgrammes As SqlCommand
     Dim sqlDataTblProgrammes As SqlDataAdapter
     Dim bindSourceProgrammes As BindingSource
 
@@ -14,12 +19,15 @@ Public Class frmProgramme
     Dim sqlDataTblEtudiants As SqlDataAdapter
     Dim bindSourceEtudiants As BindingSource
 
+
     'Assignation d'une Propriétée pour reçevoir le DataSet
     Public Sub New(ByVal ds As DataSet)
         InitializeComponent()
         Me.ds = ds
     End Sub
     Public Property ds As DataSet
+
+    Dim da As SqlDataAdapter
 
 
     ' Chargement du Formulaire - Initialisation
@@ -38,15 +46,43 @@ Public Class frmProgramme
 
         Else
 
+            ds = New DataSet("tp_p44")
+            da = New SqlDataAdapter()
+
             cn = New SqlConnection(My.Settings.ConnectionString)
 
             sqlCommandTblProgrammes = New SqlCommand("SELECT * FROM dbo.T_programme", cn)
+            sqlInsertCommandProgrammes = New SqlCommand("INSERT INTO dbo.T_Programme (pro_no, pro_nom, pro_nbr_unites, pro_nbr_heures) Values(@pro_no, @pro_nom, @pro_nbr_unites, @pro_nbr_heures)", cn)
+            sqlUpdateCommandProgrammes = New SqlCommand("UPDATE dbo.T_Programme SET pro_nom=@pro_nom, pro_nbr_unites=@pro_nbr_unites, pro_nbr_heures=@pro_nbr_heures WHERE pro_no=@pro_no", cn)
+            sqlDeleteCommandProgrammes = New SqlCommand("DELETE FROM dbo.T_Programme WHERE pro_no=@pro_no", cn)
             sqlDataTblProgrammes = New SqlDataAdapter(sqlCommandTblProgrammes)
             bindSourceProgrammes = New BindingSource()
 
             sqlCommandTblEtudiants = New SqlCommand("SELECT * FROM dbo.T_etudiants", cn)
             sqlDataTblEtudiants = New SqlDataAdapter(sqlCommandTblEtudiants)
             bindSourceEtudiants = New BindingSource()
+
+            'Assignation des Parametres pour mon CUD Programme... Qui fera le lien avec la Query Insert, Update, Delete
+            sqlInsertCommandProgrammes.Parameters.AddRange({
+            New SqlParameter("@pro_no", SqlDbType.VarChar, 0, "pro_no"),
+            New SqlParameter("@pro_nom", SqlDbType.VarChar, 0, "pro_nom"),
+            New SqlParameter("@pro_nbr_unites", SqlDbType.Float, 0, "pro_nbr_unites"),
+            New SqlParameter("@pro_nbr_heures", SqlDbType.Int, 0, "pro_nbr_heures")
+        })
+
+
+            sqlUpdateCommandProgrammes.Parameters.AddRange({
+            New SqlParameter("@pro_no", SqlDbType.VarChar, 0, "pro_no"),
+            New SqlParameter("@pro_nom", SqlDbType.VarChar, 0, "pro_nom"),
+            New SqlParameter("@pro_nbr_unites", SqlDbType.Float, 0, "pro_nbr_unites"),
+            New SqlParameter("@pro_nbr_heures", SqlDbType.Int, 0, "pro_nbr_heures")
+        })
+
+            sqlDeleteCommandProgrammes.Parameters.Add("@pro_no", SqlDbType.VarChar, 0, "pro_no")
+
+            sqlDataTblProgrammes.InsertCommand = sqlInsertCommandProgrammes
+            sqlDataTblProgrammes.UpdateCommand = sqlUpdateCommandProgrammes
+            sqlDataTblProgrammes.DeleteCommand = sqlDeleteCommandProgrammes
 
             DisconnectedExtraireDonneesVersListView()
 
@@ -268,56 +304,92 @@ Public Class frmProgramme
 #End Region
 
 #Region "Début Bloc fonctions | Action des Boutons Click"
-    Private Sub btnNouveau_Click(sender As Object, e As EventArgs) Handles btnNouveau.Click, btnNouveau.Click
+    Private Sub btnNouveau_Click(sender As Object, e As EventArgs) Handles btnNouveau.Click
+        If modeConnecte Then
 
-        BarrerControles(btnModifier, btnEnlever, btnNouveau, lvProgramme)
+            ViderFormulaire()
+            BarrerControles(lvProgramme)
+
+            btnOK.Tag = "Nouveau"
+
+        Else
+
+            bindSourceProgrammes.AddNew()
+            BarrerControles(dgvProgramme)
+
+        End If
+
+        BarrerControles(btnModifier, btnEnlever, btnNouveau)
         DebarrerControles(btnOK, btnAnnuler, gbProgramme)
 
-        ViderFormulaire()
         mtbNoProgramme.Focus()
-
-        btnOK.Tag = "Nouveau"
 
     End Sub
 
-    Private Sub btnOK_Click(sender As Object, e As EventArgs) Handles btnOK.Click, btnOK.Click
+    Private Sub btnOK_Click(sender As Object, e As EventArgs) Handles btnOK.Click
 
-        If btnOK.Tag = "Nouveau" Then
+        If modeConnecte Then
+
+            If btnOK.Tag = "Nouveau" Then
+
+                Try
+
+                    InsererNouveauProgramme()
+
+                Catch ex As Exception
+                    MsgBox("Une erreur est survenue lors de l'insertion du programme dans la DB : " & ex.Message)
+                End Try
+
+            ElseIf btnOK.Tag = "Modifier" Then
+
+                Try
+
+                    UpdateProgramme()
+
+                Catch ex As Exception
+
+                    MsgBox("Une erreur est survenue lors de la modification du programme dans la DB")
+
+                End Try
+
+            End If
+
+            DebarrerControles(lvProgramme)
+            ExtraireDonneesVersListView()
+
+            btnOK.Tag = ""
+
+        Else
 
             Try
 
-                InsererNouveauProgramme()
+                DisconnectedUpdateSource("T_programme")
 
             Catch ex As Exception
                 MsgBox("Une erreur est survenue lors de l'insertion du programme dans la DB : " & ex.Message)
             End Try
 
-        ElseIf btnOK.Tag = "Modifier" Then
+            DebarrerControles(dgvProgramme)
 
-            Try
-
-                UpdateProgramme()
-
-            Catch ex As Exception
-
-                MsgBox("Une erreur est survenue lors de la modification du programme dans la DB")
-
-            End Try
 
         End If
 
 
-        DebarrerControles(btnModifier, btnEnlever, btnNouveau, mtbNoProgramme, lvProgramme)
+        DebarrerControles(btnModifier, btnEnlever, btnNouveau, mtbNoProgramme)
         BarrerControles(btnOK, btnAnnuler, gbProgramme)
-        ExtraireDonneesVersListView()
 
-        btnOK.Tag = ""
 
     End Sub
 
     Private Sub btnModifier_Click(sender As Object, e As EventArgs) Handles btnModifier.Click
 
-        btnOK.Tag = "Modifier"
+
+        If modeConnecte Then
+            BarrerControles(lvProgramme)
+            btnOK.Tag = "Modifier"
+        Else
+            BarrerControles(dgvProgramme)
+        End If
 
         DebarrerControles(btnOK, btnAnnuler, gbProgramme)
         BarrerControles(btnModifier, btnEnlever, btnNouveau, lvProgramme, mtbNoProgramme)
@@ -326,33 +398,68 @@ Public Class frmProgramme
 
     Private Sub btnAnnuler_Click(sender As Object, e As EventArgs) Handles btnAnnuler.Click
 
-        DebarrerControles(btnModifier, btnEnlever, btnNouveau, lvProgramme)
+        DebarrerControles(btnModifier, btnEnlever, btnNouveau)
         BarrerControles(btnOK, btnAnnuler, gbProgramme)
 
-        ViderFormulaire()
+        If modeConnecte Then
 
-        If lvProgramme.Items.Count > 0 Then
+            ViderFormulaire()
 
-            lvProgramme.SelectedIndices.Add(0)
-            lvProgramme.Focus()
+            If lvProgramme.Items.Count > 0 Then
+
+                lvProgramme.SelectedIndices.Add(0)
+                lvProgramme.Focus()
+
+            End If
+
+            DebarrerControles(lvProgramme)
+
+        Else
+
+            bindSourceProgrammes.CancelEdit()
+            DebarrerControles(dgvProgramme)
 
         End If
+
 
     End Sub
 
     Private Sub btnEnlever_Click(sender As Object, e As EventArgs) Handles btnEnlever.Click
 
-        If lvEtudiants.Items.Count > 0 Then
-            MsgBox("Ce programme contient des étudiants, vous ne pouvez pas le supprimer", Title:="Action interdite")
+        If modeConnecte Then
+
+            If lvEtudiants.Items.Count > 0 Then
+                MsgBox("Ce programme contient des étudiants, vous ne pouvez pas le supprimer", Title:="Action interdite")
+            Else
+                Dim suppression As DialogResult = MessageBox.Show("Voulez-vous vraiment supprimer le cours No : " & mtbNoProgramme.Text, "Suppression", MessageBoxButtons.YesNo)
+
+                If suppression = DialogResult.Yes Then
+
+                    SupprimerProgramme(mtbNoProgramme.Text, txtBoxNom.Text)
+
+                End If
+            End If
+
         Else
-            Dim suppression As DialogResult = MessageBox.Show("Voulez-vous vraiment supprimer le cours No : " & mtbNoProgramme.Text, "Suppression", MessageBoxButtons.YesNo)
 
-            If suppression = DialogResult.Yes Then
+            If dgvEtudiants.Rows.Count > 1 Then
+                MsgBox("Ce programme contient des étudiants, vous ne pouvez pas le supprimer", Title:="Action interdite")
+            Else
+                Dim suppression As DialogResult = MessageBox.Show("Voulez-vous vraiment supprimer le cours No : " & mtbNoProgramme.Text, "Suppression", MessageBoxButtons.YesNo)
 
-                SupprimerProgramme(mtbNoProgramme.Text, txtBoxNom.Text)
+                If suppression = DialogResult.Yes Then
 
+                    Try
+                        bindSourceProgrammes.RemoveCurrent()
+                        DisconnectedUpdateSource("T_programme")
+                    Catch ex As Exception
+                        MsgBox("Une erreur est survenue lors de la mise a jours vers la DB : " & ex.Message)
+                    End Try
+
+                End If
             End If
         End If
+
 
     End Sub
 
@@ -398,7 +505,24 @@ Public Class frmProgramme
 
 
     ' Mode Déconnecté
+    Private Sub DisconnectedUpdateSource(tableName As String)
 
+        Try
+
+            If tableName = "T_programme" Then
+                bindSourceProgrammes.EndEdit()
+                dgvProgramme.EndEdit()
+                sqlDataTblProgrammes.Update(ds.Tables(tableName))
+            End If
+
+        Catch ex As Exception
+            MsgBox("Une erreur est survenue lors de la mise a jours vers la DB : " & ex.Message)
+
+            bindSourceProgrammes.CancelEdit()
+            ds.Tables(tableName).RejectChanges()
+        End Try
+
+    End Sub
 
     Private Sub DisconnectedExtraireDonneesVersListView()
 
@@ -472,8 +596,11 @@ Public Class frmProgramme
 
         If dgvProgramme.SelectedRows.Count > 0 Then
             If Not IsDBNull(dgvProgramme.SelectedRows(0).Cells(0).Value) Then
+                DebarrerControles(btnModifier, btnEnlever)
                 Dim idProgramme As String = dgvProgramme.SelectedRows(0).Cells(0).Value.ToString()
                 ChargerEtudiantsDgv(idProgramme)
+            Else
+                BarrerControles(btnModifier, btnEnlever)
             End If
         End If
 
