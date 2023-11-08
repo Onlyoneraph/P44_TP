@@ -4,13 +4,17 @@ Public Class frmEtudiants
 
     Dim errorProv As New ErrorProvider()
     Dim modeConnecte As Boolean = Me.Tag
-    Dim cn As SqlConnection
 
-    'Assignation d'une Propriétée pour reçevoir le DataSet
-    Public Sub New(ByVal ds As DataSet)
+    'Assignation des propriétées pour reçevoir le DataSet et la connexion
+    Public Sub New(ds As DataSet, cn As SqlConnection)
         InitializeComponent()
         Me.ds = ds
+        Me.cn = cn
     End Sub
+
+    'Déclaration des propriétés de mon Form Étudiants
+    Public Property ds As DataSet
+    Public Property cn As SqlConnection
 
     'Declaration des variables nécessaires au Mode Déconnecté
     Dim sqlCommandTblEtudiants As SqlCommand
@@ -21,7 +25,6 @@ Public Class frmEtudiants
     Dim bindSourceEtudiants As BindingSource
 
     Dim da As SqlDataAdapter
-    Public Property ds As DataSet
 
 
     Dim sqlCommandTblProgrammes As SqlCommand
@@ -56,10 +59,7 @@ Public Class frmEtudiants
             dgvEtudiants.Visible = True
             lvEtudiantsEtu.Visible = False
 
-            ds = New DataSet("tp_p44")
             da = New SqlDataAdapter()
-
-            cn = New SqlConnection(My.Settings.ConnectionString)
 
             sqlCommandTblEtudiants = New SqlCommand("SELECT * FROM dbo.T_etudiants", cn)
             sqlInsertCommandEtudiants = New SqlCommand("INSERT INTO dbo.T_etudiants (etu_da, pro_no, etu_nom, etu_prenom, etu_sexe, etu_adresse, etu_ville, etu_province, etu_telephone, etu_codepostal) Values(@etu_da, @pro_no, @etu_nom, @etu_prenom, @etu_sexe, @etu_adresse, @etu_ville, @etu_province, @etu_telephone, @etu_codepostal)", cn)
@@ -109,8 +109,6 @@ Public Class frmEtudiants
 
 
             DisconnectedExtraireDonneesVersDataGridViewEtu()
-
-            DisconnectedInitialiserNoProg()
 
 
         End If
@@ -459,52 +457,62 @@ Public Class frmEtudiants
 
     Private Sub btnOK_Click(sender As Object, e As EventArgs) Handles btnOK.Click
 
-        If modeConnecte Then
 
-            If btnOK.Tag = "Nouveau" Then
+        If txtBoxNomEtu.Text.Length < 2 OrElse txtboxPrenomEtu.Text.Length < 2 OrElse cbNoProgrammeEtu.Text.Length > 6 Then
 
+            MsgBox("Un étudiant doit posséder un numéro de DA, un nom, un prénom ainsi qu'un numéro de programme", Title:="Oups")
+
+        Else
+
+
+            If modeConnecte Then
+
+                If btnOK.Tag = "Nouveau" Then
+
+                    Try
+
+                        InsererNouvelEtudiant()
+
+                    Catch ex As Exception
+                        MsgBox("Une erreur est survenue lors de l'insertion du programme dans la DB : " & ex.Message)
+                    End Try
+
+                ElseIf btnOK.Tag = "Modifier" Then
+
+                    Try
+
+                        UpdateEtudiant()
+
+                    Catch ex As Exception
+
+                        MsgBox("Une erreur est survenue lors de la modification du programme dans la DB")
+
+                    End Try
+
+                End If
+
+
+                DebarrerControles(lvEtudiantsEtu)
+                ExtraireDonneesVersListViewEtu()
+
+                btnOK.Tag = ""
+
+            Else
                 Try
 
-                    InsererNouvelEtudiant()
+                    DisconnectedUpdateSource("T_etudiants")
 
                 Catch ex As Exception
                     MsgBox("Une erreur est survenue lors de l'insertion du programme dans la DB : " & ex.Message)
                 End Try
 
-            ElseIf btnOK.Tag = "Modifier" Then
-
-                Try
-
-                    UpdateEtudiant()
-
-                Catch ex As Exception
-
-                    MsgBox("Une erreur est survenue lors de la modification du programme dans la DB")
-
-                End Try
-
+                DebarrerControles(dgvEtudiants)
             End If
 
+            DebarrerControles(btnNouveau, btnEnlever, btnModifier)
+            BarrerControles(btnOK, btnAnnuler, gbEtudiant, mtbNoDAEtu)
 
-            DebarrerControles(lvEtudiantsEtu)
-            ExtraireDonneesVersListViewEtu()
-
-            btnOK.Tag = ""
-
-        Else
-            Try
-
-                DisconnectedUpdateSource("T_etudiants")
-
-            Catch ex As Exception
-                MsgBox("Une erreur est survenue lors de l'insertion du programme dans la DB : " & ex.Message)
-            End Try
-
-            DebarrerControles(dgvEtudiants)
         End If
-
-        DebarrerControles(btnNouveau, btnEnlever, btnModifier)
-        BarrerControles(btnOK, btnAnnuler, gbEtudiant, mtbNoDAEtu)
 
 
 
@@ -617,8 +625,8 @@ Public Class frmEtudiants
     End Sub
 
     Private Sub cbNoProgrammeEtu_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles cbNoProgrammeEtu.Validating
-        If cbNoProgrammeEtu.Text.Length < 6 Then
-            errorProv.SetError(cbNoProgrammeEtu, "Le numéro de programme doit contenir 6 caractères")
+        If cbNoProgrammeEtu.SelectedIndex = -1 Then
+            errorProv.SetError(cbNoProgrammeEtu, "Veuillez sélectionner un numéro de programme existant")
             e.Cancel = True
         End If
     End Sub
@@ -626,6 +634,41 @@ Public Class frmEtudiants
     Private Sub cbNoProgrammeEtu_Validated(sender As Object, e As EventArgs) Handles cbNoProgrammeEtu.Validated
         errorProv.SetError(cbNoProgrammeEtu, String.Empty)
     End Sub
+
+    Private Sub mtbTelEtu_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles mtbTelEtu.Validating
+        If Not mtbTelEtu.MaskFull Then
+            errorProv.SetError(mtbTelEtu, "Un numéro de téléphone doit être composé de 10 chiffres")
+            e.Cancel = True
+        End If
+    End Sub
+
+    Private Sub mtbTelEtu_Validated(sender As Object, e As EventArgs) Handles mtbTelEtu.Validated
+        errorProv.SetError(mtbTelEtu, String.Empty)
+    End Sub
+
+    Private Sub mtbCPEtu_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles mtbCPEtu.Validating
+        If Not mtbCPEtu.MaskFull Then
+            errorProv.SetError(mtbCPEtu, "Un Code postal doit être composé de 6 caractères")
+            e.Cancel = True
+        End If
+    End Sub
+
+    Private Sub mtbCPEtu_Validated(sender As Object, e As EventArgs) Handles mtbCPEtu.Validated
+        errorProv.SetError(mtbCPEtu, String.Empty)
+    End Sub
+
+    Private Sub cbProvinceEtu_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles cbProvinceEtu.Validating
+        If cbProvinceEtu.SelectedIndex = -1 Then
+            errorProv.SetError(cbProvinceEtu, "Veuillez choisir une province dans la liste")
+            e.Cancel = True
+        End If
+    End Sub
+
+    Private Sub cbProvinceEtu_Validated(sender As Object, e As EventArgs) Handles cbProvinceEtu.Validated
+        errorProv.SetError(cbProvinceEtu, String.Empty)
+    End Sub
+
+
 
 #End Region
 
@@ -650,10 +693,6 @@ Public Class frmEtudiants
             bindSourceEtudiants.CancelEdit()
             ds.Tables(tableName).RejectChanges()
         End Try
-
-    End Sub
-
-    Private Sub DisconnectedInitialiserNoProg()
 
     End Sub
 
@@ -780,6 +819,8 @@ Public Class frmEtudiants
     Private Sub rbMasculinEtu_CheckedChanged(sender As Object, e As EventArgs) Handles rbMasculinEtu.CheckedChanged
         InscrireTagGBSexe()
     End Sub
+
+
 
 
 #End Region

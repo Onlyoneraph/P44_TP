@@ -1,11 +1,23 @@
-﻿Imports System.Data.Common
-Imports Microsoft.Data.SqlClient
+﻿Imports Microsoft.Data.SqlClient
 
 Public Class frmProgramme
 
     Dim errorProv As New ErrorProvider()
     Dim modeConnecte As Boolean = Me.Tag
-    Dim cn As SqlConnection
+
+
+    'Assignation des Propriétée pour reçevoir le DataSet et la connexion
+    Public Sub New(ds As DataSet, cn As SqlConnection)
+        InitializeComponent()
+        Me.ds = ds
+        Me.cn = cn
+    End Sub
+
+
+    'Déclaration des propriétés de mon Form Programme
+    Public Property ds As DataSet
+    Public Property cn As SqlConnection
+
 
     'Declaration des variables nécessaires au Mode Déconnecté
     Dim sqlCommandTblProgrammes As SqlCommand
@@ -18,14 +30,6 @@ Public Class frmProgramme
     Dim sqlCommandTblEtudiants As SqlCommand
     Dim sqlDataTblEtudiants As SqlDataAdapter
     Dim bindSourceEtudiants As BindingSource
-
-
-    'Assignation d'une Propriétée pour reçevoir le DataSet
-    Public Sub New(ByVal ds As DataSet)
-        InitializeComponent()
-        Me.ds = ds
-    End Sub
-    Public Property ds As DataSet
 
     Dim da As SqlDataAdapter
 
@@ -46,10 +50,7 @@ Public Class frmProgramme
 
         Else
 
-            ds = New DataSet("tp_p44")
             da = New SqlDataAdapter()
-
-            cn = New SqlConnection(My.Settings.ConnectionString)
 
             sqlCommandTblProgrammes = New SqlCommand("SELECT * FROM dbo.T_programme", cn)
             sqlInsertCommandProgrammes = New SqlCommand("INSERT INTO dbo.T_Programme (pro_no, pro_nom, pro_nbr_unites, pro_nbr_heures) Values(@pro_no, @pro_nom, @pro_nbr_unites, @pro_nbr_heures)", cn)
@@ -328,55 +329,64 @@ Public Class frmProgramme
 
     Private Sub btnOK_Click(sender As Object, e As EventArgs) Handles btnOK.Click
 
-        If modeConnecte Then
+        If Not mtbNoProgramme.MaskFull OrElse txtBoxNom.Text.Length < 6 OrElse Not mtbNbrUnites.MaskFull Then
 
-            If btnOK.Tag = "Nouveau" Then
+            MsgBox("Un programme doit posséder un numéro de programme, un nom, ainsi qu'un nombre d'unités", Title:="Oups")
+
+        Else
+
+            If modeConnecte Then
+
+                If btnOK.Tag = "Nouveau" Then
+
+                    Try
+
+                        InsererNouveauProgramme()
+
+                    Catch ex As Exception
+                        MsgBox("Une erreur est survenue lors de l'insertion du programme dans la DB : " & ex.Message)
+                    End Try
+
+                ElseIf btnOK.Tag = "Modifier" Then
+
+                    Try
+
+                        UpdateProgramme()
+
+                    Catch ex As Exception
+
+                        MsgBox("Une erreur est survenue lors de la modification du programme dans la DB")
+
+                    End Try
+
+                End If
+
+                DebarrerControles(lvProgramme)
+                ExtraireDonneesVersListView()
+
+                btnOK.Tag = ""
+
+            Else
 
                 Try
 
-                    InsererNouveauProgramme()
+                    DisconnectedUpdateSource("T_programme")
 
                 Catch ex As Exception
                     MsgBox("Une erreur est survenue lors de l'insertion du programme dans la DB : " & ex.Message)
                 End Try
 
-            ElseIf btnOK.Tag = "Modifier" Then
+                DebarrerControles(dgvProgramme)
 
-                Try
-
-                    UpdateProgramme()
-
-                Catch ex As Exception
-
-                    MsgBox("Une erreur est survenue lors de la modification du programme dans la DB")
-
-                End Try
 
             End If
 
-            DebarrerControles(lvProgramme)
-            ExtraireDonneesVersListView()
 
-            btnOK.Tag = ""
-
-        Else
-
-            Try
-
-                DisconnectedUpdateSource("T_programme")
-
-            Catch ex As Exception
-                MsgBox("Une erreur est survenue lors de l'insertion du programme dans la DB : " & ex.Message)
-            End Try
-
-            DebarrerControles(dgvProgramme)
-
+            DebarrerControles(btnModifier, btnEnlever, btnNouveau, mtbNoProgramme)
+            BarrerControles(btnOK, btnAnnuler, gbProgramme)
 
         End If
 
-
-        DebarrerControles(btnModifier, btnEnlever, btnNouveau, mtbNoProgramme)
-        BarrerControles(btnOK, btnAnnuler, gbProgramme)
 
 
     End Sub
